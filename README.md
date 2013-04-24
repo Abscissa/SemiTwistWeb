@@ -39,12 +39,11 @@ How to Set Up a New Project
 To set up a new project using SemiTwist Web Framework:
 
 1. Clone the following git repos:
+  - This one, SemiTwist Web Framework
+  - [SemiTwist D Tools](https://bitbucket.org/Abscissa/semitwistdtools/wiki/Home)
+  - [Mustache-D](https://github.com/repeatedly/mustache-d)
 
-- This one, SemiTwist Web Framework
-- [SemiTwist D Tools](https://bitbucket.org/Abscissa/semitwistdtools/wiki/Home)
-- [Mustache-D](https://github.com/repeatedly/mustache-d)
-
-2. Download Vibe.d v0.7.13 [here](http://vibed.org/download?file=vibed-0.7.13.zip) and extract it.
+2. Download [Vibe.d](http://vibed.org) v0.7.13 from [here](http://vibed.org/download?file=vibed-0.7.13.zip) and extract it.
 
 3. Create a new directory for your project.
 
@@ -62,38 +61,38 @@ To set up a new project using SemiTwist Web Framework:
 
 10. Import Vibe.d by using ```import vibe.vibe;```, NOT ```import vibe.d;```. Also import (at the very least) ```semitwistWeb.init```. Then create a ```main()``` function like this:
 
-```
-module myProj.main;
+	```
+	module myProj.main;
 
-import vibe.vibe;
-import mysql.db;
-import semitwistWeb.init;
-//...whatever other imports...
+	import vibe.vibe;
+	import mysql.db;
+	import semitwistWeb.init;
+	//...whatever other imports...
 
-int main(string[] args)
-{
-	//...any initial setup here...
-	return semitwistWebMain!(MyCustomSessionType, MyCustomHandlerType, MyCustomDBOTypes)(args, &postInit, () => openDB());
-}
+	int main(string[] args)
+	{
+		//...any initial setup here...
+		return semitwistWebMain!(MyCustomSessionType, MyCustomHandlerType, MyCustomDBOTypes)(args, &postInit, () => openDB());
+	}
 
-/// Returns: -1 normally, or else an errorlevel
-/// for the program to immediately exit with.
-int postInit(ref HttpServerSettings httpServerSettings, ref UrlRouter router)
-{
-	/+
-	...any additional setup to be done after semitwistWeb
-	initializes, but just before it starts listening for
-	connections...
-	+/
-	
-	return -1;
-}
+	/// Returns: -1 normally, or else an errorlevel
+	/// for the program to immediately exit with.
+	int postInit(ref HttpServerSettings httpServerSettings, ref UrlRouter router)
+	{
+		/+
+		...any additional setup to be done after semitwistWeb
+		initializes, but just before it starts listening for
+		connections...
+		+/
+		
+		return -1;
+	}
 
-Connection openDB()
-{
-	//...open a connection to your MySQL DB...
-}
-```
+	Connection openDB()
+	{
+		//...open a connection to your MySQL DB...
+	}
+	```
 
 11. Add a root index page and other pages to your site using the completely undocumented API. Also, there aren't any example applications to learn from yet. Yea, I'm really helpful so far aren't I?
 
