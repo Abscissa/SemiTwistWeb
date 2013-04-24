@@ -1,0 +1,20 @@
+Please try the following:
+
+1. Note that only MySQL is supported right now.
+
+2. Make sure 'res/conf.d' and your DB are set up correctly. (Recompile
+   this program if you've changed 'res/conf.d'). See 'res/conf-sample.d'
+   for details.
+
+3. Make sure your DB user has the following permissions:
+   SELECT, INSERT, UPDATE, DELETE
+
+   Additionally, permissions for CREATE and DROP are needed for initial
+   setup of the DB (then they can be revoked if you wish).
+
+4. Your DB user must use MySQL's new-style long password hash, not the
+   very-old-style short password hash. (Just reset the DB user's password
+   to be sure. It will use the new-style automatically.)
+
+5. Run this program with the --init-db switch to create the needed DB tables
+   (THIS WILL DESTROY ALL DATA!)
