@@ -280,6 +280,7 @@ struct BaseHandler
 		if(addAppContextCallback is null)
 			throw new Exception("'BaseHandler.addAppContextCallback' has not been set.");
 		
+		addCommonContext(viewContext, baseSess);
 		addAppContextCallback(viewContext, baseSess);
 		return mustache.render(templateName, viewContext);
 	}
