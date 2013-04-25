@@ -112,6 +112,8 @@ string definePages(DefinePage[] pages)
 		auto method = page.method=="ANY"? "Nullable!HttpMethod()" : "Nullable!HttpMethod(HttpMethod."~page.method~")";
 		page._makePageStr = "makePage!("~method~", "~page.dispatcher~", `"~page.name~"`, `"~page.urlRoute~"`, "~page.targs~")()";
 	}
+
+	str ~= "import std.typecons : Nullable;\n";
 	
 	foreach(page; pages)
 		str ~= "Page!("~page.targs~") page_"~page.name~";\n";
