@@ -32,15 +32,15 @@ private Mustache _mustache;
 		_mustache.ext     = "html";
 		_mustache.path    = getExecPath()~"../res/templates/";
 		_mustache.level   = Mustache.CacheLevel.once;
-		_mustache.handler(() => onMustacheError());
+		_mustache.handler((tagName) => onMustacheError(tagName));
 	}
 	
 	return _mustache;
 }
 
-private string onMustacheError()
+private string onMustacheError(string tagName)
 {
-	throw new Exception("Unknown Mustache variable name.");
+	throw new Exception("Unknown Mustache variable name: "~tagName);
 }
 
 string createUnsafeScoped(string typeName, string varName, string ctorParams="")
