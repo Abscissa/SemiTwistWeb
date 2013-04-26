@@ -28,6 +28,7 @@ string[] bindAddresses;
 string logFile     = "";
 
 //TODO: Find/create a tool to monitor the logfile and send emails for each new entry.
+//TODO*: Fix: No 500 page (or any page at all) when handler throws.
 
 alias int function(ref HttpServerSettings, ref UrlRouter) CustomPostInit;
 

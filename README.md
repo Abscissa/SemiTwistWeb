@@ -38,28 +38,34 @@ How to Set Up a New Project
 
 To set up a new project using SemiTwist Web Framework:
 
-1. Clone the following git repos:
-  - This one, SemiTwist Web Framework
-  - [SemiTwist D Tools](https://bitbucket.org/Abscissa/semitwistdtools/wiki/Home)
-  - [Mustache-D](https://github.com/repeatedly/mustache-d)
+1. Create a new directory for your project.
 
-2. Download [Vibe.d](http://vibed.org) v0.7.13 from [here](http://vibed.org/download?file=vibed-0.7.13.zip) and extract it.
+2. From either your project's directory or SemiTwist Web Framework's directory, run the command ```fetchExternals```. (You can run ```fetchExternals --help``` to see options.) This will create a subdirectory named ```externals``` with the correct versions of the needed prerequisites cloned into it.
 
-3. Create a new directory for your project.
+3. Copy the enitire ```res``` and ```www-static``` directories from SemiTwist Web Framework to your new project directory.
 
-4. Copy the enitire ```res``` and ```www-static``` directories from SemiTwist Web Framework to your new project directory.
+4. Make a copy of ```res/conf-sample.d``` named ```res/conf.d```. Open the new ```res/conf.d```, read the comments and enter your own configuartion settings.
 
-5. Make a copy of ```res/conf-sample.d``` named ```res/conf.d```. Open the new ```res/conf.d```, read the comments and enter your own configuartion settings.
+5. Open ```res/dbTroubleshootMsg.txt``` and read it. Make sure you have a MySQL database set up appropriately as that file describes.
 
-6. Open ```res/dbTroubleshootMsg.txt``` and read it. Make sure you have a MySQL database set up appropriately as that file describes.
+6. Open ```res/init.sql```. Leave the ```session``` table alone, but add any additional SQL statments to initialize your own MySQL database.
 
-7. Open ```res/init.sql```. Leave the ```session``` table alone, but add any additional SQL statments to initialize your own MySQL database.
+7. Customize the main HTML page template ```res/templates/frame-main.html``` (using Mustache syntax), the CSS file ```www-static/style.css``` (not a templated file), and optionally the HTML error page templates (```res/templates/err-*.html```) to your liking.
 
-8. Customize the main HTML page template ```res/templates/frame-main.html``` (using Mustache syntax), the CSS file ```www-static/style.css``` (not a templated file), and optionally the HTML error page templates (```res/templates/err-*.html```) to your liking.
+8. Set up your build system or build script to pass the following flags to DMD:
+    ```
+	-Jpath_to_your_res_directory
+	-I[correct_path]externals/vibed/source
+	-I[correct_path]externals/SemiTwistDTools/src
+	-I[correct_path]externals/mustache-d/src
+	-I[correct_path]externals/arsd
+	```
+	
+	I'd recommend also using ```-version=VibeIdleCollect```.
+	
+	If you're not using ```dub``` or ```vibe``` to build your project, then don't forget to include the appropriate linker swithces to build a Vibe.d app, and (on Windows) copy Vibe.d's necessary DLLs to the same directory where your project's EXE file will reside.
 
-9. Set up your build system or build script to pass the flag ```-Jpath_to_your_res_directory``` to DMD, as well as ```-Ipath``` flags for SemiTwist Web Framework, SemiTwist D Tools, Mustache-D and Vibe.d. I'd recommend also using ```-version=VibeIdleCollect```. If you're not using ```dub``` or ```vibe``` to build your project, then don't forget to include the appropriate linker swithces to build a Vibe.d app, and (on Windows) copy Vibe.d's necessary DLLs to the same directory where your project's EXE file will reside.
-
-10. Import Vibe.d by using ```import vibe.vibe;```, NOT ```import vibe.d;```. Also import (at the very least) ```semitwistWeb.init```. Then create a ```main()``` function like this:
+9. Import Vibe.d by using ```import vibe.vibe;```, NOT ```import vibe.d;```. Also import (at the very least) ```semitwistWeb.init```. Then create a ```main()``` function like this:
 
 	```
 	module myProj.main;
@@ -94,13 +100,13 @@ To set up a new project using SemiTwist Web Framework:
 	}
 	```
 
-11. Add a root index page and other pages to your site using the completely undocumented API. Also, there aren't any example applications to learn from yet. Yea, I'm really helpful so far aren't I?
+10. Add a root index page and other pages to your site using the completely undocumented API. Also, there aren't any example applications to learn from yet. Yea, I'm really helpful so far aren't I?
 
-12. Build your project.
+11. Build your project.
 
-13. Run your project with the --init-db switch to create the needed DB tables (THIS WILL DESTROY ALL DATA!)
+12. Run your project with the --init-db switch to create the needed DB tables (THIS WILL DESTROY ALL DATA!)
 
-14. Run your project without the --init-db switch to actually start it.
+13. Run your project without the --init-db switch to actually start it.
 
 What is "SemiTwist"?
 --------------------
