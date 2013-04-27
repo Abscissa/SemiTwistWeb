@@ -129,6 +129,8 @@ void fetchSemiTwistDTools(string path)
 void fetchArsd(string path)
 {
 	chdir(path);
+	makeDir("arsd");
+	chdir("arsd");
 	gitClone(
 		"https://github.com/adamdruppe/misc-stuff-including-D-programming-language-web-stuff.git",
 		"cf071218321654e34704c563fed1c06080fda837"
