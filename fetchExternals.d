@@ -80,6 +80,7 @@ void fetchAll()
 	sandboxFetch(&fetchVibeD,           "Vibe.d",            externDir~"/vibed");
 	sandboxFetch(&fetchSemiTwistDTools, "SemiTwist D Tools", externDir~"/SemiTwistDTools");
 	sandboxFetch(&fetchArsd,            "arsd",              externDir~"/arsd");
+	sandboxFetch(&fetchMySQLN,          "mysql-native",      externDir~"/mysqln");
 }
 
 void sandboxFetch(void function(string) dg, string name, string path)
@@ -131,6 +132,15 @@ void fetchArsd(string path)
 	gitClone(
 		"https://github.com/adamdruppe/misc-stuff-including-D-programming-language-web-stuff.git",
 		"cf071218321654e34704c563fed1c06080fda837"
+	);
+}
+
+void fetchMySQLN(string path)
+{
+	chdir(path);
+	gitClone(
+		"https://github.com/rejectedsoftware/mysql-native.git",
+		"fe12d92e1c731bb55b3be1a3cff2f9c5fa9f4b74"
 	);
 }
 
