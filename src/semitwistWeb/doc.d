@@ -35,9 +35,10 @@ void addCommonContext(Mustache.Context c, SessionData sess)
 		return mustache.render("frame-main", c);
 	}
 
-	c["mainFrame"] = &mainFrame;
+	c["mainFrame"]          = &mainFrame;
+	c["urlBase"]            = Conf.urlBase;
+	c["staticsUrl"]         = staticsUrl;
 	c["stylesheetFilename"] = staticsUrl ~ "style.css";
-	c["urlBase"] = Conf.urlBase;
 
 	// Session information
 	c.useSection(sess.isLoggedIn? "loggedIn" : "loggedOut");
