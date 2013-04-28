@@ -213,7 +213,7 @@ void convertMySQLToDBO(TDbo)(MySQLReceivedException e, TDbo dbo)
 	if(e.errorCode == 1062)
 		throw DBODuplicateEntryException.fromDBO(dbo, e);
 	else
-		throw e; //TODO: Make sure this doesn't screw up the stack trace
+		throw e; //TODO*: Make sure this doesn't screw up the stack trace
 }
 
 class DBOException : Exception

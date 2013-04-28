@@ -28,7 +28,7 @@ string[] bindAddresses;
 string logFile     = "";
 
 //TODO: Find/create a tool to monitor the logfile and send emails for each new entry.
-//TODO*: Fix: No 500 page (or any page at all) when handler throws.
+//TODO*? Fix: Calls to Vibe.d's log*() funcs should always use at least: "%s"
 
 alias int function(ref HttpServerSettings, ref UrlRouter) CustomPostInit;
 

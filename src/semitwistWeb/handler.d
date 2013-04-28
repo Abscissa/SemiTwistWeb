@@ -105,7 +105,7 @@ struct HttpResult
 			{
 				// Just send a bare-bones 500 page
 				res.statusCode = 500;
-				res.writeBody(BaseHandler.genericErrorMessage, "text/plain");
+				res.writeBody(BaseHandler.genericErrorMessage, "text/html");
 			}
 		}
 		
@@ -159,19 +159,33 @@ struct BaseHandler
 	
 	HttpResult errorHandler(HttpServerErrorInfo error)
 	{
-		if(error.code >= 400 && error.code < 500)
-			return errorHandler4xx(error);
+		try
+		{
+			if(error.code >= 400 && error.code < 500)
+				return errorHandler4xx(error);
 
-		if(error.code >= 500 && error.code < 600)
-			return errorHandler5xx(error);
-		
-		logHttpError(error);
-		logWarn(
-			"[%s] Unexpectedly handled \"error\" code outside 4xx/5xx: %s - %s. Sending 500 instead.",
-			req.clientIPs, error.code, httpStatusText(error.code)
-		);
-		
-		return genericError(HttpStatus.InternalServerError);
+			if(error.code >= 500 && error.code < 600)
+				return errorHandler5xx(error);
+			
+			logHttpError(error);
+			logWarn(
+				"[%s] Unexpectedly handled \"error\" code outside 4xx/5xx: %s - %s. Sending 500 instead.",
+				req.clientIPs, error.code, httpStatusText(error.code)
+			);
+			
+			return genericError(HttpStatus.InternalServerError);
+		}
+		catch(Exception e)
+		{
+			logError("Uncaught exception during error handler: %s", e);
+
+			// Just send a bare-bones 500 page
+			HttpResult r;
+			r.statusCode = 500;
+			r.mime = "text/html";
+			r.content = BaseHandler.genericErrorMessage;
+			return r;
+		}
 	}
 
 	private void logHttpError(HttpServerErrorInfo error)
