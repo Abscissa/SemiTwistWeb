@@ -268,7 +268,7 @@ void gitClone(string repo, string ver=null)
 	auto quietSwitch = verbose? "" : "-q ";
 	run("git clone "~quietSwitch~quote(repo)~" .");
 	if(ver != "")
-		run("git checkout "~quietSwitch~"-B semitwist-web "~quote(ver));
+		run("git checkout "~quietSwitch~"-b semitwist-web "~quote(ver));
 }
 
 void wget(string url)
