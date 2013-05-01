@@ -42,8 +42,12 @@ void addCommonContext(Mustache.Context c, SessionData sess)
 
 	// Session information
 	c.useSection(sess.isLoggedIn? "loggedIn" : "loggedOut");
-	c["pageMessage"] = sess.oneShotMessage;
-	sess.oneShotMessage = null;
+	if(sess.oneShotMessage != "")
+	{
+		c.useSection("hasPageMessage");
+		c["pageMessage"] = sess.oneShotMessage;
+		sess.oneShotMessage = null;
+	}
 	
 	// Pages
 	foreach(page; PageBase.registeredPages)
