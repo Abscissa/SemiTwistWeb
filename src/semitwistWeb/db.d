@@ -305,6 +305,7 @@ class DBODuplicateEntryException : DBOException
 
 alias TypeTuple!(
 	SessionDB,
+	Token,
 ) DBOHelperTypes;
 
 void clearDBCache(UserDBOTypes...)()
@@ -494,5 +495,120 @@ struct SessionDB
 		}
 		
 		return sessions;
+	}
+}
+
+struct Token
+{
+	string type;
+	string code;
+	string email;
+	DateTime expiration;
+	ulong linkedId;
+	
+	mixin defineDBO!(Conf.dbName, "token");
+	
+	void dbInsert(Connection dbConn)
+	{
+		auto db = Command(dbConn);
+		db.sql = text(
+			"INSERT INTO `", dbTable, "` (",
+			"`type`, `code`, `expiration`, `email`, `linkedId`",
+			") VALUES (",
+			mySqlString(type), ", ", mySqlString(code), ", ", mySqlString(expiration), ", ",
+			mySqlString(email), ", ", linkedId,
+			")"
+		);
+		db.dboRunSQL(this);
+	}
+	
+	void dbDelete(Connection dbConn)
+	{
+		auto db = Command(dbConn);
+		db.sql = text(
+			"DELETE FROM `", dbTable, "` WHERE ", mySqlString(email),
+			" AND `type`=", mySqlString(type), " AND `code`=", mySqlString(code)
+		);
+		db.dboRunSQL(this);
+	}
+
+	static Nullable!Token validate(Connection dbConn, string type, string code, string email)
+	{
+		Nullable!Token ret;
+		auto db = Command(dbConn);
+		db.sql = text(
+			"SELECT `expiration`, `linkedId` FROM `"~dbTable~"`"~
+			" WHERE `email`="~mySqlString(email)~
+			" AND `type`="~mySqlString(type)~
+			" AND `code`="~mySqlString(code)~
+			" AND `expiration` >= NOW()"
+		);
+		auto rows = db.dboRunSQLResult(Token());
+		if(rows.length == 0)
+			return ret;
+		
+		Token token;
+		token.type  = type;
+		token.code  = code;
+		token.email = email;
+		token.expiration = rows[0][0/+"expiration"+/].get!DateTime();
+		token.linkedId   = rows[0][1/+"linkedId"+/].coerce!ulong();
+		
+		ret = token;
+		return ret;
+	}
+	
+	//TODO: Redo to use more chars so code is shorter. Also, skip the emailHash
+	//      because making the same chars totally random is mathematically better anyway.
+	//      In other words, this is temporarily crap and needs re-done.
+	private static string genCode(string email)
+	{
+		auto emailHash = sha1Of(email);
+		auto rnd = randomBytes(16);
+		
+		auto combined =
+			(ubyte[]).init ~
+			rnd[0] ~ emailHash[10] ~
+			rnd[1] ~ emailHash[11] ~
+			rnd[2] ~ emailHash[12] ~
+			rnd[3] ~ emailHash[13] ~
+			rnd[4] ~ emailHash[14] ~
+			rnd[5] ~ emailHash[15] ~
+			rnd[6] ~ emailHash[16] ~
+			rnd[7] ~ emailHash[17] ~
+			rnd[8..$];
+
+		auto codeRaw = semitwist.util.text.toHexString(combined);
+		auto code = insertDashes(codeRaw);
+		return code;
+	}
+	
+	static Token create(
+		Connection dbConn, string type, Duration lifetime,
+		string email, ulong linkedId
+	)
+	{
+		auto expiration = cast(DateTime)Clock.currTime() + lifetime;
+		auto token = Token(type, "", email, expiration, linkedId);
+		foreach(i; 0..20)
+		{
+			token.code = genCode(token.email);
+			
+			try
+				token.dbInsert(dbConn);
+			catch(DBODuplicateEntryException e)
+			{
+				if(e.fieldName == "code")
+					continue; // Try generating another code
+
+				throw e;
+			}
+			
+			// Token was successfully inserted into DB
+			return token;
+		}
+		
+		// Failed to generate ununsed code
+		throw new Exception("Unable to generate unique '"~type~"' token");
 	}
 }

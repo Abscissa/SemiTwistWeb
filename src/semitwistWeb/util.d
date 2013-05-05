@@ -137,6 +137,28 @@ void fill(T)(
 	elem.outerHTML = finalHtml;
 }
 
+string insertDashes(string str)
+{
+	string ret;
+
+	int i;
+	for(i = 0; i+5 < str.length; i += 5)
+	{
+		if(i > 0)
+			ret ~= '-';
+
+		ret ~= str[i..i+5];
+	}
+
+	if(i < str.length)
+	{
+		ret ~= '-';
+		ret ~= str[i..$];
+	}
+
+	return ret;
+}
+
 bool isSSLReverseProxy(HttpServerRequest req)
 {
 	// Newer versions of IIS automatically set this
