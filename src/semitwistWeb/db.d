@@ -9,6 +9,7 @@ import std.digest.sha;
 import std.exception;
 import std.regex;
 import std.string;
+import std.traits;
 import std.typecons;
 import std.typetuple;
 
@@ -27,7 +28,7 @@ private void ensureOpenDBIsSet()
 		throw new Exception("dbHelperOpenDB has not been set.");
 }
 
-string mySqlString(string str)
+string mySqlString()(string str)
 {
 	if(str is null)
 		return "NULL";
@@ -43,7 +44,17 @@ string mySqlString(string str)
 		.replace("\x1A", `\Z`) ~ "'";
 }
 
-string mySqlString(DateTime dateTime)
+string mySqlString(T)(Nullable!T value)
+{
+	return value.isNull? "NULL" : mySqlString(value.get());
+}
+
+string mySqlString(T)(T value) if(isNumeric!T)
+{
+	return to!string(value);
+}
+
+string mySqlString()(DateTime dateTime)
 {
 	return mySqlString( mySqlDateTime(dateTime) );
 }
@@ -55,6 +66,30 @@ string mySqlDateTime(DateTime dateTime)
 			dateTime.year, dateTime.month, dateTime.day,
 			dateTime.hour, dateTime.minute, dateTime.second
 		);
+}
+
+T getNullable(T)(Row row, size_t index) if(isSomeString!T)
+{
+	if(row.isNull(index))
+		return null;
+
+	return row[index].coerce!T();
+}
+
+Nullable!T getNullable(T)(Row row, size_t index) if(is(T==DateTime))
+{
+	if(row.isNull(index))
+		return Nullable!T();
+
+	return Nullable!T( row[index].get!T() );
+}
+
+Nullable!T getNullable(T)(Row row, size_t index) if(!isSomeString!T && !is(T==DateTime))
+{
+	if(row.isNull(index))
+		return Nullable!T();
+
+	return Nullable!T( row[index].coerce!T() );
 }
 
 /// Runs 'res/init.sql' on the DB.

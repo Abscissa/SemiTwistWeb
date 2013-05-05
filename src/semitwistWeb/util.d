@@ -238,22 +238,6 @@ Nullable!T paramAs(T)(HttpServerRequest req, string name)
 	return Nullable!T(value);
 }
 
-T getNullable(T)(Row row, size_t index) if(isSomeString!T)
-{
-	if(row.isNull(index))
-		return null;
-
-	return row[index].coerce!T();
-}
-
-Nullable!T getNullable(T)(Row row, size_t index) if(!isSomeString!T)
-{
-	if(row.isNull(index))
-		return Nullable!T();
-
-	return Nullable!T( row[index].coerce!T() );
-}
-
 ubyte[8] genSalt()
 {
 	ubyte[8] ret;
