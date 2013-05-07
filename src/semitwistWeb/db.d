@@ -561,7 +561,7 @@ struct Token
 	{
 		auto db = Command(dbConn);
 		db.sql = text(
-			"DELETE FROM `", dbTable, "` WHERE ", mySqlString(email),
+			"DELETE FROM `", dbTable, "` WHERE `email`=", mySqlString(email),
 			" AND `type`=", mySqlString(type), " AND `code`=", mySqlString(code)
 		);
 		db.dboRunSQL(this);
