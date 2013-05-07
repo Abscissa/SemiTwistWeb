@@ -104,7 +104,7 @@ void fetchMustache(string path)
 	chdir(path);
 	gitClone(
 		"https://github.com/repeatedly/mustache-d.git",
-		"30ff2ae2b119c613d8cb5d0e536fe89119dee7ab"
+		"370f43d035a4f451dfcaff67b4b6d849faf4c8a5"
 	);
 }
 
