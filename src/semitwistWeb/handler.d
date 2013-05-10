@@ -13,6 +13,7 @@ import std.stdio;
 import std.string;
 import std.traits;
 import std.typecons;
+import std.variant;
 
 import vibe.vibe;
 import mysql.db;

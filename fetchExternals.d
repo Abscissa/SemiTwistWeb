@@ -113,7 +113,7 @@ void fetchVibeD(string path)
 	chdir(path);
 	gitClone(
 		"https://github.com/rejectedsoftware/vibe.d.git",
-		"v0.7.13"
+		"v0.7.15"
 	);
 }
 
@@ -142,7 +142,7 @@ void fetchMySQLN(string path)
 	chdir(path);
 	gitClone(
 		"https://github.com/rejectedsoftware/mysql-native.git",
-		"fe12d92e1c731bb55b3be1a3cff2f9c5fa9f4b74"
+		"f82c568e657514d331e3798640bd8b4c9bea2887"
 	);
 }
 

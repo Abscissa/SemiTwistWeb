@@ -41,14 +41,14 @@ int semitwistWebMain(CustomSession, CustomHandler, UserDBOTypes...)
 	dbHelperOpenDB = openDB;
 	BaseHandler.addAppContextCallback = &CustomHandler.addAppContext;
 
-	processCustomCmdLine(args);
+	if(auto errlvl = processCustomCmdLine(args) != -1)
+		return errlvl;
+
 	if(initDB)
 	{
 		initializeDB();
 		return 0;
 	}
-	
-	processCommandLineArgs(args);
 	
 	if(auto errlvl = init!(CustomSession, CustomHandler, UserDBOTypes)(customPostInit) != -1)
 		return errlvl;
@@ -62,33 +62,43 @@ int semitwistWebMain(CustomSession, CustomHandler, UserDBOTypes...)
 	}
 }
 
-private void processCustomCmdLine(ref string[] args)
+/// Returns: -1 normally, or else errorlevel to exit with
+private int processCustomCmdLine(ref string[] args)
 {
-	getopt(
-		args,
-		std.getopt.config.caseSensitive,
-		std.getopt.config.passThrough,
+	getOption("init-db",           &initDB,              "Init the DB and exit (THIS WILL DESTROY ALL DATA!)");
+	getOption("clear-sessions",    &clearSessions,       "Upon startup, clear sessions in DB insetad of resuming them.");
+	getOption("port",              &port,                "Port to bind.");
+	string bindAddress;
+	while(getOption("ip", &bindAddress, "IP address to bind. (Can be specified multiple times)"))
+		bindAddresses ~= bindAddress;
+	getOption("no-cache",          &BaseHandler.noCache, "Disable internal page caching. (Useful during development)");
+	getOption("no-cache-static",   &noCacheStatic,       "Set HTTP headers on static files to disable caching. (Useful during development)");
+	getOption("no-static",         &noStatic,            "Disable serving of static files.");
+	getOption("log",               &logFile,             "Set logfile.");
 
-		"init-db",           &initDB,
-		"clear-sessions",    &clearSessions,
-		"port",              &port,
-		"ip",                &bindAddresses,
-		"no-cache",          &BaseHandler.noCache,
-		"no-cache-static",   &noCacheStatic,
-		"no-static",         &noStatic,
-		"log",               &logFile,
-
-		"insecure",          &BaseHandler.allowInsecure,
-		"insecure-cookies",  &useInsecureCookies,
-		"public-debug-info", &BaseHandler.publicDebugInfo,
-		"log-sql",           &dbHelperLogSql,
-	);
-
+	getOption("insecure",          &BaseHandler.allowInsecure,   "Allow non-HTTPS requests.");
+	getOption("insecure-cookies",  &useInsecureCookies,          "Don't set SECURE attribute on session cookies.");
+	getOption("public-debug-info", &BaseHandler.publicDebugInfo, "Display uncaught exceptions and stack traces to user. (Useful during development)");
+	getOption("log-sql",           &dbHelperLogSql,              "Log all SQL statements executed. (Useful during development)");
+	
+	try
+	{
+		if(!finalizeCommandLineOptions())
+			return 0;
+	}
+	catch(Exception e)
+	{
+		logError("Error processing command line: %s", e.msg);
+		return 1;
+	}
+	
 	if(bindAddresses.length == 0)
 		bindAddresses = ["0.0.0.0", "::"];
 	
 	if(logFile != "")
 		setLogFile(logFile, LogLevel.Info);
+	
+	return -1;
 }
 
 /// Returns: -1 normally, or else errorlevel to exit with
