@@ -53,11 +53,11 @@ int semitwistWebMain(CustomSession, CustomHandler, UserDBOTypes...)
 	if(auto errlvl = init!(CustomSession, CustomHandler, UserDBOTypes)(customPostInit) != -1)
 		return errlvl;
 
-	logInfo("Running event loop...");
+	stLogInfo("Running event loop...");
 	try {
 		return runEventLoop();
 	} catch( Throwable th ){
-		logError("Unhandled exception in event loop: %s", th.toString());
+		stLogError("Unhandled exception in event loop: ", th);
 		return 1;
 	}
 }
@@ -88,7 +88,7 @@ private int processCustomCmdLine(ref string[] args)
 	}
 	catch(Exception e)
 	{
-		logError("Error processing command line: %s", e.msg);
+		stLogError("Error processing command line: ", e.msg);
 		return 1;
 	}
 	
@@ -109,33 +109,33 @@ private int init(CustomSession, CustomHandler, UserDBOTypes...)
 	{
 		if(Handler.allowInsecure || useInsecureCookies || Handler.publicDebugInfo)
 		{
-			logError("This was compiled with -version=RequireSecure, therefore the following flags are disabled: --insecure --insecure-cookies --public-debug-info");
+			stLogError("This was compiled with -version=RequireSecure, therefore the following flags are disabled: --insecure --insecure-cookies --public-debug-info");
 			return 1;
 		}
 	}
 	
 	// Warn about --insecure-cookies
 	if(useInsecureCookies)
-		logWarn("Used --insecure-cookies: INSECURE cookies are ON! Session cookies will not use the Secure attribute!");
+		stLogWarn("Used --insecure-cookies: INSECURE cookies are ON! Session cookies will not use the Secure attribute!");
 
 	// Warn about --insecure
 	if(BaseHandler.allowInsecure)
-		logWarn("Used --insecure: INSECURE mode is ON! HTTPS will NOT be forced!");
+		stLogWarn("Used --insecure: INSECURE mode is ON! HTTPS will NOT be forced!");
 
 	// Warn about HTTP
 	if(Conf.host.toLower().startsWith("http://"))
 	{
 		if(BaseHandler.allowInsecure)
-			logWarn(
-				"Non-relative URLs are set to HTTP, not HTTPS! "~
+			stLogWarn(
+				"Non-relative URLs are set to HTTP, not HTTPS! ",
 				"If you did not intend this, change Conf.host and recompile."
 			);
 		else
 		{
 			// Require --insecure for non-HTTPS
-			logError(
-				"Conf.host is HTTP instead of HTTPS. THIS IS NOT RECOMMENDED. "~
-				"If you wish to allow this anyway, you must use the --insecure flag. "~
+			stLogError(
+				"Conf.host is HTTP instead of HTTPS. THIS IS NOT RECOMMENDED. ",
+				"If you wish to allow this anyway, you must use the --insecure flag. ",
 				"Note that this will cause non-relative application URLs to be HTTP instead of HTTPS."
 			);
 			return 1;
@@ -145,8 +145,8 @@ private int init(CustomSession, CustomHandler, UserDBOTypes...)
 	{
 		scope(failure)
 		{
-			logError(
-				"There was an error building the basic pages.\n" ~
+			stLogError(
+				"There was an error building the basic pages.\n",
 				import("dbTroubleshootMsg.txt")
 			);
 		}
@@ -154,22 +154,22 @@ private int init(CustomSession, CustomHandler, UserDBOTypes...)
 		auto dbConn = dbHelperOpenDB();
 		scope(exit) dbConn.close();
 
-		logInfo("Preloading db cache...");
+		stLogInfo("Preloading db cache...");
 		rebuildDBCache!UserDBOTypes(dbConn);
 
 		if(clearSessions)
 		{
-			logInfo("Clearing persistent sessions...");
+			stLogInfo("Clearing persistent sessions...");
 			SessionDB.dbDeleteAll(dbConn);
 			return 0;
 		}
 
-		logInfo("Restoring sessions...");
+		stLogInfo("Restoring sessions...");
 		sessionStore = new MemorySessionStore();
 		restoreSessions!CustomSession(dbConn);
 	}
 	
-	logInfo("Initing HTTP server settings...");
+	stLogInfo("Initing HTTP server settings...");
 	alias handlerDispatchError!CustomHandler customHandlerDispatchError;
 	auto httpServerSettings = new HttpServerSettings();
 	httpServerSettings.port = port;
@@ -178,21 +178,21 @@ private int init(CustomSession, CustomHandler, UserDBOTypes...)
 	httpServerSettings.errorPageHandler =
 		(req, res, err) => customHandlerDispatchError!"errorHandler"(req, res, err);
 	
-	logInfo("Initing URL router...");
+	stLogInfo("Initing URL router...");
 	auto router = initRouter!CustomHandler();
 	
 	if(customPostInit !is null)
 	{
-		logInfo("Running customPostInit...");
+		stLogInfo("Running customPostInit...");
 		if(auto errlvl = customPostInit(httpServerSettings, router) != -1)
 			return errlvl;
 	}
 	
-	logInfo("Forcing GC cycle...");
+	stLogInfo("Forcing GC cycle...");
 	GC.collect();
 	GC.minimize();
 
-	logInfo("Done initing SemiTwist Web Framework");
+	stLogInfo("Done initing SemiTwist Web Framework");
 	listenHttp(httpServerSettings, router);
 	return -1;
 }

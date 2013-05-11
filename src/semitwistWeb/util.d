@@ -43,6 +43,24 @@ private string onMustacheError(string tagName)
 	throw new Exception("Unknown Mustache variable name: "~tagName);
 }
 
+void stLog
+	(LogLevel level, /*string mod = __MODULE__, string func = __FUNCTION__,*/ string file = __FILE__, int line = __LINE__, T...)
+	(auto ref T args)
+{
+	log!(level, /*__MODULE__, __FUNCTION__,*/ __FILE__, __LINE__)(
+		"%s",
+		text("[", Clock.currTime(), " ", toUpper(to!string(level)), "] ", args)
+	);
+}
+void stLogTrace     (/*string mod = __MODULE__, string func = __FUNCTION__,*/ string file = __FILE__, int line = __LINE__, T...)(auto ref T args) { stLog!(LogLevel.trace     /*, mod, func*/, file, line)(args); }
+void stLogDebugV    (/*string mod = __MODULE__, string func = __FUNCTION__,*/ string file = __FILE__, int line = __LINE__, T...)(auto ref T args) { stLog!(LogLevel.debugV    /*, mod, func*/, file, line)(args); }
+void stLogDebug     (/*string mod = __MODULE__, string func = __FUNCTION__,*/ string file = __FILE__, int line = __LINE__, T...)(auto ref T args) { stLog!(LogLevel.debug_    /*, mod, func*/, file, line)(args); }
+void stLogDiagnostic(/*string mod = __MODULE__, string func = __FUNCTION__,*/ string file = __FILE__, int line = __LINE__, T...)(auto ref T args) { stLog!(LogLevel.diagnostic/*, mod, func*/, file, line)(args); }
+void stLogInfo      (/*string mod = __MODULE__, string func = __FUNCTION__,*/ string file = __FILE__, int line = __LINE__, T...)(auto ref T args) { stLog!(LogLevel.info      /*, mod, func*/, file, line)(args); }
+void stLogWarn      (/*string mod = __MODULE__, string func = __FUNCTION__,*/ string file = __FILE__, int line = __LINE__, T...)(auto ref T args) { stLog!(LogLevel.warn      /*, mod, func*/, file, line)(args); }
+void stLogError     (/*string mod = __MODULE__, string func = __FUNCTION__,*/ string file = __FILE__, int line = __LINE__, T...)(auto ref T args) { stLog!(LogLevel.error     /*, mod, func*/, file, line)(args); }
+void stLogCritical  (/*string mod = __MODULE__, string func = __FUNCTION__,*/ string file = __FILE__, int line = __LINE__, T...)(auto ref T args) { stLog!(LogLevel.critical  /*, mod, func*/, file, line)(args); }
+
 string createUnsafeScoped(string typeName, string varName, string ctorParams="")
 {
 	if(ctorParams != "")
@@ -270,7 +288,7 @@ bool validatePass(string pass, ubyte[] saltedHash)
 		(scheme == 0x02 && saltedHash.length != 29)
 	)
 	{
-		logWarn(
+		stLogWarn(
 			"Validating against unsupported password scheme: 0x%.2X (length: %s) (Assuming not a match)",
 			scheme, saltedHash.length
 		);

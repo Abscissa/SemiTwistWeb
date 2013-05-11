@@ -96,16 +96,18 @@ Nullable!T getNullable(T)(Row row, size_t index) if(!isSomeString!T && !is(T==Da
 /// Ie, Completely clears the DB and creates the needed tables.
 void initializeDB()
 {
-	int port = Conf.dbPort; // WhyTF is this needed?
-	logInfo(
-		"Initializing MySQL DB at %s:%s '%s', user '%s'...",
-		Conf.dbHost, port, Conf.dbName, Conf.dbUser
+	int port = Conf.dbPort; // WhyTF was this needed?
+	stLogInfo(
+		format(
+			"Initializing MySQL DB at %s:%s '%s', user '%s'...",
+			Conf.dbHost, port, Conf.dbName, Conf.dbUser
+		)
 	);
 
 	scope(failure)
 	{
-		logError(
-			"There was an error initializing the database.\n" ~
+		stLogError(
+			"There was an error initializing the database.\n",
 			import("dbTroubleshootMsg.txt")
 		);
 	}
@@ -126,7 +128,7 @@ void initializeDB()
 		}
 	}
 
-	logInfo("Initializing DB done.");
+	stLogInfo("Initializing DB done.");
 }
 
 string[uint] getDBColumns(Connection dbConn, string dbName, string tableName)
@@ -189,7 +191,7 @@ bool runSQL(ref Command db)
 bool runSQL(ref Command db, ref ulong rowsAffected)
 {
 	if(dbHelperLogSql)
-		logInfo("runSQL: "~db.sql);
+		stLogInfo("runSQL: ", db.sql);
 
 	return db.execSQL(rowsAffected);
 }
@@ -217,7 +219,7 @@ bool dboRunSQL(T)(ref Command db, T dbo)
 bool dboRunSQL(T)(ref Command db, T dbo, ref ulong rowsAffected)
 {
 	if(dbHelperLogSql)
-		logInfo("dboRunSQL: "~db.sql);
+		stLogInfo("dboRunSQL: ", db.sql);
 
 	ensureOpenDBIsSet();
 
@@ -231,7 +233,7 @@ bool dboRunSQL(T)(ref Command db, T dbo, ref ulong rowsAffected)
 ResultSet dboRunSQLResult(T)(ref Command db, T dbo, ColumnSpecialization[] csa = null)
 {
 	if(dbHelperLogSql)
-		logInfo("dboRunSQLResult: "~db.sql);
+		stLogInfo("dboRunSQLResult: ", db.sql);
 
 	ensureOpenDBIsSet();
 
@@ -293,9 +295,11 @@ class DBODuplicateEntryException : DBOException
 					field = dbKeys[keyIndex];
 				else
 				{
-					logWarn(
-						logPrefix~"Parsed key index %s, but metadata contains only %s key(s)."/+~" Rebuilding DB cache."+/,
-						keyIndex, dbKeys.length
+					stLogWarn(
+						logPrefix,
+						"Parsed key index ", keyIndex,
+						", but metadata contains only ", dbKeys.length,
+						" key(s)."/+, " Rebuilding DB cache."+/,
 					);
 					//rebuildDBCache(dbHelperOpenDB); // Can't do this, don't know the user's DBOs
 				}
@@ -319,9 +323,11 @@ class DBODuplicateEntryException : DBOException
 				
 				if(field == "")
 				{
-					logWarn(
-						logPrefix~"Parsed key name '%s', but couldn't find such a key name in the metadata (%s)."/+~" Rebuilding DB cache."+/,
-						keyName, dbKeys
+					stLogWarn(
+						logPrefix,
+						"Parsed key name '", keyName,
+						"', but couldn't find such a key name in the metadata (",
+						dbKeys, ")."/+, " Rebuilding DB cache."+/,
 					);
 					//rebuildDBCache(dbHelperOpenDB); // Can't do this, don't know the user's DBOs
 				}
@@ -329,8 +335,8 @@ class DBODuplicateEntryException : DBOException
 		}
 
 		if(field == "")
-			logWarn(
-				logPrefix~"Couldn't parse field name in MySQL server's error message: %s",
+			stLogWarn(
+				logPrefix, "Couldn't parse field name in MySQL server's error message: ",
 				e.msg
 			);
 

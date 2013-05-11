@@ -127,7 +127,7 @@ struct HttpResult
 		
 		if(!content.hasValue)
 		{
-			logError("HttpResult.content has no value. URL: "~req.path);
+			stLogError("HttpResult.content has no value. URL: ", req.path);
 			fail();
 		}
 		else if(content.type == typeid(string))
@@ -144,7 +144,7 @@ struct HttpResult
 		}
 		else
 		{
-			logError("HttpResult.content contains an unexpected type");
+			stLogError("HttpResult.content contains an unexpected type");
 			fail();
 		}
 	}
@@ -179,16 +179,18 @@ struct BaseHandler
 				return errorHandler5xx(error);
 			
 			logHttpError(error);
-			logWarn(
-				"[%s] Unexpectedly handled \"error\" code outside 4xx/5xx: %s - %s. Sending 500 instead.",
-				req.clientIPs, error.code, httpStatusText(error.code)
+			stLogWarn(
+				format(
+					"[%s] Unexpectedly handled \"error\" code outside 4xx/5xx: %s - %s. Sending 500 instead.",
+					req.clientIPs, error.code, httpStatusText(error.code)
+				)
 			);
 			
 			return genericError(HttpStatus.InternalServerError);
 		}
 		catch(Exception e)
 		{
-			logError("Uncaught exception during error handler: %s", e);
+			stLogError("Uncaught exception during error handler: ", e);
 
 			// Just send a bare-bones 500 page
 			HttpResult r;
@@ -201,10 +203,12 @@ struct BaseHandler
 
 	private void logHttpError(HttpServerErrorInfo error)
 	{
-		logError(
-			"[%s] %s - %s\n\n%s\n\nInternal error information:\n%s",
-			req.clientIPs, error.code, httpStatusText(error.code),
-			error.message, error.debugMessage
+		stLogError(
+			format(
+				"[%s] %s - %s\n\n%s\n\nInternal error information:\n%s",
+				req.clientIPs, error.code, httpStatusText(error.code),
+				error.message, error.debugMessage
+			)
 		);
 	}
 
