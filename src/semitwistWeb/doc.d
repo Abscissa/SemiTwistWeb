@@ -46,7 +46,6 @@ void addCommonContext(Mustache.Context c, SessionData sess)
 	{
 		c.useSection("hasPageMessage");
 		c["pageMessage"] = sess.oneShotMessage;
-		sess.oneShotMessage = null;
 	}
 	
 	// Pages

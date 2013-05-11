@@ -105,6 +105,7 @@ struct HttpResult
 			else
 			{
 				// Just send a bare-bones 500 page
+				sess.oneShotMessage = null;
 				res.statusCode = 500;
 				res.writeBody(BaseHandler.genericErrorMessage, "text/html");
 			}
@@ -117,6 +118,13 @@ struct HttpResult
 				res.headers["Location"] = locationHeader;
 		}
 		
+		void clearOneShotMessage()
+		{
+			// If statusCode is 2xx, 4xx or 5xx
+			if((statusCode >= 200 && statusCode < 300) || statusCode >= 400)
+				sess.oneShotMessage = null;
+		}
+		
 		if(!content.hasValue)
 		{
 			logError("HttpResult.content has no value. URL: "~req.path);
@@ -125,11 +133,13 @@ struct HttpResult
 		else if(content.type == typeid(string))
 		{
 			setupHeaders();
+			clearOneShotMessage();
 			res.writeBody(content.get!(string)(), mime);
 		}
 		else if(content.type == typeid( const(ubyte)[] ))
 		{
 			setupHeaders();
+			clearOneShotMessage();
 			res.writeBody(content.get!( const(ubyte)[] )(), mime);
 		}
 		else

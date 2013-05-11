@@ -145,7 +145,6 @@ class SessionData
 	///             submissions["purchase"] will not be cleared,
 	///             but the rest will.
 	///             If formsToKeep is null or empty string, then all will be cleared.
-	//TODO: Clearing forms needs to be per-URL, not per-Form, due to (for example) survey page.
 	final void clearOtherForms(string currUrl, string formToKeep)
 	{
 		// Validate formToKeep
