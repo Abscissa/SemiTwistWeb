@@ -54,6 +54,7 @@ To set up a new project using SemiTwist Web Framework:
 
 8. Set up your build system or build script to pass the following flags to DMD:
     ```
+	-version=Have_vibe_d
 	-Jpath_to_your_res_directory
 	-I[correct_path]externals/vibed/source
 	-I[correct_path]externals/SemiTwistDTools/src
