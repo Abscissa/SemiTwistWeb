@@ -95,6 +95,7 @@ private int processCustomCmdLine(ref string[] args)
 	if(bindAddresses.length == 0)
 		bindAddresses = ["0.0.0.0", "::"];
 	
+	setPlainLogging(false);
 	if(logFile != "")
 		setLogFile(logFile, LogLevel.Info);
 	
