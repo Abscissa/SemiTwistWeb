@@ -83,10 +83,11 @@ void fetchAll()
 	sandboxFetch(&fetchMySQLN,          "mysql-native",      externDir~"/mysqln");
 }
 
-void sandboxFetch(void function(string) dg, string name, string path)
+/// Returns: Success?
+bool sandboxFetch(void function(string) dg, string name, string path)
 {
 	if(!init(name, path))
-		return;
+		return false;
 	
 	auto oldDir = getcwd();
 	scope(exit) chdir(oldDir);
@@ -96,7 +97,12 @@ void sandboxFetch(void function(string) dg, string name, string path)
 	try
 		dg(path);
 	catch(Fail e)
+	{
 		errorMsg("Failure fetching "~name~": "~e.msg);
+		return false;
+	}
+	
+	return true;
 }
 
 void fetchMustache(string path)
