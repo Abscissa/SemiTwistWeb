@@ -12,6 +12,7 @@ import mysql.db;
 import semitwist.util.all;
 
 import semitwistWeb.db;
+import semitwistWeb.doc;
 import semitwistWeb.form;
 import semitwistWeb.util;
 
@@ -59,6 +60,7 @@ class SessionData
 	bool     isDummyLogin = false;
 	string   oneShotMessage;
 	FormSubmission[string] submissions;
+	string   postLoginUrl;  /// Empty string implies default
 	
 	/// The ID of the logged-in user, or null if logged out
 	private string _userId;
@@ -155,6 +157,9 @@ class SessionData
 		foreach(name, val; submissions)
 		if(name != formToKeep || submissions[name].url != currUrl)
 			submissions[name].clear();
+		
+		if(formToKeep != PageBase.loginPageName)
+			postLoginUrl = null;
 	}
 
 	/// formsToKeep: For example, if this is ["purchase", "foobar"],
@@ -172,6 +177,9 @@ class SessionData
 		foreach(name, val; submissions)
 		if(!formsToKeep.contains(name) || submissions[name].url != currUrl)
 			submissions[name].clear();
+
+		if(!formsToKeep.contains(PageBase.loginPageName))
+			postLoginUrl = null;
 	}
 
 	void restoreSession(Connection dbConn)

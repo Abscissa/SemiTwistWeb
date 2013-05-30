@@ -30,9 +30,11 @@ template handlerDispatch(CustomHandler)
 {
 	void handlerDispatch(string funcName)(HttpServerRequest req, HttpServerResponse res)
 	{
+		PageBase.validateLoginPageName();
+
 		if(CustomHandler.noCache)
 			CustomHandler.clearDocsCache();
-
+		
 		// Force HTTPS
 		if(!CustomHandler.allowInsecure && !req.isSSLReverseProxy())
 		{
@@ -269,6 +271,35 @@ struct BaseHandler
 		r.mime = "text/plain";
 		r.content = "Redirect to: " ~ url;
 		return r;
+	}
+	
+	/// Automatically sets session's postLoginUrl to the URL requested by the user.
+	HttpResult redirectToLogin(string loginUrl)
+	{
+		baseSess.postLoginUrl = req.requestURL;
+		return redirect(loginUrl);
+	}
+	
+	/// If postLoginUrl=="", that signals that your app's default
+	/// after-login URL is to be used.
+	HttpResult redirectToLogin(string loginUrl, string postLoginUrl)
+	{
+		baseSess.postLoginUrl = postLoginUrl;
+		return redirect(loginUrl);
+	}
+	
+	/// Call this when the user succesfulyl logs in.
+	///
+	/// If the user had attempted to reach a login-only URL, this redirects
+	/// them back to it. Otherwise, this redirects to 'defaultUrl'.
+	HttpResult redirectToPostLogin(string defaultUrl)
+	{
+		auto targetUrl = baseSess.postLoginUrl;
+		if(targetUrl == "")
+			targetUrl = defaultUrl;
+		
+		baseSess.postLoginUrl = null;
+		return redirect(targetUrl);
 	}
 	
 	HttpResult badRequest()

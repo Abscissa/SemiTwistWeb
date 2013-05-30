@@ -207,6 +207,8 @@ alias void delegate(HttpServerRequest, HttpServerResponse) PageHandler;
 
 abstract class PageBase
 {
+	static string loginPageName;
+
 	protected string _name;
 	final @property string name()
 	{
@@ -296,6 +298,15 @@ abstract class PageBase
 		registeredPages.remove(_name);
 		registeredPageNames = null;
 		registeredPageNamesInited = false;
+	}
+
+	static void validateLoginPageName()
+	{
+		if(loginPageName == "")
+			throw new Exception("Required value was not set: PageBase.loginPageName");
+		
+		if(!isRegistered(loginPageName))
+			throw new Exception("PageBase.loginPageName is not a registered page: '"~PageBase.loginPageName~"'");
 	}
 
 	/// This is a low-level tool provided for the sake of generic code.
