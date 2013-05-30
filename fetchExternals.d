@@ -198,6 +198,15 @@ void ensureNotExist(string path)
 				system("rmdir /S /Q "~quote(path));
 			else
 				system("rm -rf "~quote(path));
+			
+			if(exists(path))
+			{
+				throw new Fail(
+					"Failed to remove directory: "~path~"\n"~
+					"    A process may still holding an open handle within the directory.\n"~
+					"    Either delete the directory manually or try again later."
+				);
+			}
 		}
 		else
 			throw new Fail("'"~path~"' already exists");
