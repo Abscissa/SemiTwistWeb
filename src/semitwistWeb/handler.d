@@ -230,8 +230,15 @@ struct BaseHandler
 		logHttpError(error);
 
 		if(BaseHandler.publicDebugInfo)
-			//TODO: HTML-escape 'error.debugMessage'. Test with "arsd.dom.MarkupError@src\arsd\dom.d(2907): char 1989 (line 83): mismatched tag:"
-			return genericError(error.code, BaseHandler.genericErrorMessage~`<pre class="pre-wrap" style="width: 100%;">`~error.debugMessage~"</pre>");
+		{
+			auto errorMsg =
+				BaseHandler.genericErrorMessage ~
+				`<pre class="pre-wrap" style="width: 100%;">` ~
+				htmlEscapeMin(error.debugMessage) ~
+				"</pre>";
+
+			return genericError(error.code, errorMsg);
+		}
 		else
 			return genericError(error.code);
 	}
