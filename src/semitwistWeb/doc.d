@@ -11,7 +11,6 @@ import std.typecons;
 import std.typetuple;
 
 import vibe.vibe;
-import arsd.dom;
 import semitwist.util.all;
 
 import semitwistWeb.db;
