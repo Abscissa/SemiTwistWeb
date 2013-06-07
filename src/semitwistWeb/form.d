@@ -30,7 +30,10 @@ enum FormElementOptional
 struct FormElement
 {
 	FormElementType type;
-	string name;
+
+	private string _name;
+	@property string name() { return _name; }
+
 	string label;
 	string defaultValue;
 	string confirmationOf;
@@ -48,6 +51,24 @@ struct FormElement
 			_isOptional = value;
 	}
 	
+	private string _mustacheTagValue;
+	@property string mustacheTagValue()
+	{
+		if(!_mustacheTagValue)
+			_mustacheTagValue = name ~ "-value";
+
+		return _mustacheTagValue;
+	}
+	
+	private string _mustacheTagExtraClass;
+	@property string mustacheTagExtraClass()
+	{
+		if(!_mustacheTagExtraClass)
+			_mustacheTagExtraClass = name ~ "-extra-class";
+
+		return _mustacheTagExtraClass;
+	}
+	
 	this(
 		FormElementType type, string name, string label,
 		string defaultValue = "", string confirmationOf = "",
@@ -55,7 +76,7 @@ struct FormElement
 	)
 	{
 		this.type           = type;
-		this.name           = name;
+		this._name          = name;
 		this.label          = label;
 		this.defaultValue   = defaultValue;
 		this.confirmationOf = confirmationOf;
@@ -363,15 +384,36 @@ private @property FormSubmission blankFormSubmission()
 struct HtmlForm
 {
 	static enum formIdPrefix = "form-";
-	string name;
+
+	private string _name;
+	@property string name() { return _name; }
+
 	string origFilename;
 	
+	private string _mustacheTagHasErrorMsg;
+	@property string mustacheTagHasErrorMsg()
+	{
+		if(!_mustacheTagHasErrorMsg)
+			_mustacheTagHasErrorMsg = "form-"~name~"-hasErrorMsg";
+
+		return _mustacheTagHasErrorMsg;
+	}
+	
+	private string _mustacheTagErrorMsg;
+	@property string mustacheTagErrorMsg()
+	{
+		if(!_mustacheTagErrorMsg)
+			_mustacheTagErrorMsg = "form-"~name~"-errorMsg";
+
+		return _mustacheTagErrorMsg;
+	}
+
 	private FormElement[] elements;
 	private FormElement[string] elementLookup;
 
 	this(string name, string origFilename, FormElement[] elements)
 	{
-		this.name = name;
+		this._name = name.strip();
 		this.origFilename = origFilename;
 
 		validateElements(elements);
@@ -559,10 +601,8 @@ struct HtmlForm
 				auto errorCode = submission.invalidFields.get(elem.name, FieldError.None);
 				auto hasError = errorCode != FieldError.None;
 
-				//TODO*: Put these 'elem.name~"-value"' strings into the FormElement itself,
-				//       so we don't re-allocate every time.
-				c[elem.name~"-value"] = value;
-				c[elem.name~"-extra-class"] = hasError? "validate-error" : "";
+				c[elem.mustacheTagValue] = value;
+				c[elem.mustacheTagExtraClass] = hasError? "validate-error" : "";
 				break;
 
 			case FormElementType.Button:
@@ -572,10 +612,8 @@ struct HtmlForm
 			case FormElementType.ErrorLabel:
 				if(useSubmission && submission.errorMsg != "")
 				{
-					//TODO*: Put these '"form-"~submission.form.name~"-hasErrorMsg"'
-					//       strings into the Form itself, so we don't re-allocate every time.
-					c.useSection("form-"~submission.form.name~"-hasErrorMsg");
-					c["form-"~submission.form.name~"-errorMsg"] = submission.errorMsg; //elemFormatter(submission, elem, submission.errorMsg, FieldError.None);
+					c.useSection(submission.form.mustacheTagHasErrorMsg);
+					c[submission.form.mustacheTagErrorMsg] = submission.errorMsg;
 				}
 				break;
 			}
@@ -654,8 +692,6 @@ struct HtmlForm
 		bool errorLabelFound = false;
 		foreach(elemIndex, elem; elements)
 		{
-			elem.name = elem.name.strip();
-
 			bool isConfirmationOfOk = elem.confirmationOf == "";
 
 			foreach(elem2Index, elem2; elements)
