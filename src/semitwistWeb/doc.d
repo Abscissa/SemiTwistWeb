@@ -4,6 +4,7 @@ module semitwistWeb.doc;
 
 import std.array;
 import std.conv;
+import std.file;
 import std.range;
 import std.stdio;
 import std.traits;
@@ -17,6 +18,7 @@ import semitwistWeb.db;
 import semitwistWeb.form;
 import semitwistWeb.session;
 import semitwistWeb.util;
+import semitwistWeb.handler; //TODO: Only needed for BaseHandler.noCache, eliminate this import.
 
 enum staticsUrl = Conf.urlBase ~ Conf.staticsVirtualPath;
 
@@ -73,7 +75,25 @@ void addFormContext(Mustache.Context c, SessionData sess, string formName)
 			text("Form '", formName, "' can't be found in SessionData.submissions.")
 		);
 	
-	c["form-"~formName] = HtmlForm.get(formName).toHtml(*submissionPtr);
+	HtmlForm.get(formName).addFormDataContext(c, *submissionPtr);
+}
+
+struct HtmlTemplateAccess
+{
+	/// lookup[templateName] == html source after the form system's adjustments
+	private static string[string] lookup;
+	
+	static string opIndex(string templateName)
+	{
+		if(templateName !in lookup || BaseHandler.noCache)
+		{
+			auto filePath = buildPath(mustache.path, templateName ~ "." ~ mustache.ext);
+			auto rawHtml = cast(string)read(filePath);
+			lookup[templateName] = HtmlForm.registerFromTemplate(filePath, rawHtml, BaseHandler.noCache);
+		}
+		
+		return lookup[templateName];
+	}
 }
 
 /+

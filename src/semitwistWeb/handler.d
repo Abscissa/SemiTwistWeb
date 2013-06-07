@@ -349,6 +349,6 @@ struct BaseHandler
 		
 		addCommonContext(viewContext, baseSess);
 		addAppContextCallback(viewContext, baseSess);
-		return mustache.render(templateName, viewContext);
+		return mustache.renderString(HtmlTemplateAccess[templateName], viewContext);
 	}
 }

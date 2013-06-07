@@ -3,12 +3,15 @@
 module semitwistWeb.form;
 
 import std.algorithm;
+import std.array;
 import std.conv;
 import std.string;
+import std.path : buildPath;
 
 import arsd.dom;
 import semitwist.util.all;
 import semitwistWeb.session;
+import semitwistWeb.util;
 
 enum FormElementType
 {
@@ -17,8 +20,6 @@ enum FormElementType
 	Password,
 	Button,
 	ErrorLabel,
-	Label,
-	Raw,
 }
 
 enum FormElementOptional
@@ -32,7 +33,6 @@ struct FormElement
 	string name;
 	string label;
 	string defaultValue;
-	string[string] attributes;
 	string confirmationOf;
 	
 	private FormElementOptional _isOptional = FormElementOptional.No;
@@ -42,23 +42,15 @@ struct FormElement
 	}
 	@property void isOptional(FormElementOptional value)
 	{
-		if(
-			type == FormElementType.Button ||
-			type == FormElementType.ErrorLabel ||
-			type == FormElementType.Label ||
-			type == FormElementType.Raw
-		)
-		{
+		if(type == FormElementType.Button || type == FormElementType.ErrorLabel)
 			_isOptional = FormElementOptional.Yes;
-		}
 		else
 			_isOptional = value;
 	}
 	
 	this(
 		FormElementType type, string name, string label,
-		string defaultValue = "", string[string] attributes = null,
-		string confirmationOf = "",
+		string defaultValue = "", string confirmationOf = "",
 		FormElementOptional isOptional = FormElementOptional.No
 	)
 	{
@@ -66,229 +58,182 @@ struct FormElement
 		this.name           = name;
 		this.label          = label;
 		this.defaultValue   = defaultValue;
-		this.attributes     = attributes;
 		this.confirmationOf = confirmationOf;
 		this.isOptional     = isOptional;
 	}
-}
-
-alias
-	string delegate(
-		FormSubmission submission, FormElement formElem, string value, FieldError error
-	)
-	FormFormatterDg;
-
-struct FormFormatter
-{
-	FormFormatterDg text;
-	FormFormatterDg textArea;
-	FormFormatterDg password;
-	FormFormatterDg button;
-	FormFormatterDg errorLabel;
-	FormFormatterDg label;
-	FormFormatterDg raw;
 	
-	string delegate(FormSubmission submission) makeErrorMessage;
-}
-
-void setAttributes(Element elem, string[string] attributes)
-{
-	if(attributes != null)
+	//TODO: Support radios and checkboxes
+	static FormElement fromDom(Element inputElem, Form form, string filename="")
 	{
-		foreach(key, value; attributes)
+		auto formId = requireAttribute(form, "id")[HtmlForm.formIdPrefix.length..$];
+		auto isInputTag    = inputElem.tagName.toLower() == "input";
+		auto isTextAreaTag = inputElem.tagName.toLower() == "textarea";
+		auto isErrorLabel  = inputElem.tagName.toLower() == "validate-error";
+		
+		if(isErrorLabel)
 		{
-			if(key.toLower() == "class")
-				elem.addClass(value);
-			else if(key.toLower() == "style")
-				elem.style ~= value;
-			else
-				elem.setAttribute(key, value);
-		}
-	}
-}
+			foreach(ref labelTextElem; inputElem.getElementsByTagName("label-text"))
+				labelTextElem.outerHTML = "{{{form-"~formId~"-errorMsg}}}";
+			
+			inputElem.outerHTML =
+				"{{#form-"~formId~"-hasErrorMsg}}" ~
+				inputElem.innerHTML ~
+				"{{/form-"~formId~"-hasErrorMsg}}";
 
-string validateErrorFieldNameSpan(string name)
-{
-	return `<span class="validate-error-field-name">`~name~"</span>";
-}
-
-private FormFormatter _defaultFormFormatter;
-private bool isDefaultFormFormatterInited = false;
-@property FormFormatter defaultFormFormatter()
-{
-	if(!isDefaultFormFormatterInited)
-	{
-		string errorClass(FieldError error)
-		{
-			return error==FieldError.None? "" : ` class="validate-error"`;
-		}
-
-		string fieldLabel(FormElement formElem)
-		{
-			return formElem.isOptional? formElem.label~" (Optional)" : formElem.label;
+			return FormElement(FormElementType.ErrorLabel, "input-errorlabel", "");
 		}
 		
-		string text(FormSubmission submission, FormElement formElem, string value, FieldError error)
+		if(!isInputTag && !isTextAreaTag)
 		{
-			auto label = fieldLabel(formElem);
-			auto elem = Element.make("div", Html(`
-				<tr>
-					<td><label`~errorClass(error)~` id="`~formElem.name~`-label">`~label~`:</label></td>
-					<td><input`~errorClass(error)~` value="`~value~`" type="text" id="`~formElem.name~`" name="`~formElem.name~`" /></td>
-				</tr>
-			`));
-
-			auto input = elem.querySelector("input");
-			setAttributes(input, formElem.attributes);
-			return elem.innerHTML;
+			throw new Exception(
+				"Unknown type of input element (tagName: '"~inputElem.tagName~
+				"') on form '"~formId~"' in file '"~
+				(filename==""?"{unknown}":filename)~"'"
+			);
 		}
-
-		string textArea(FormSubmission submission, FormElement formElem, string value, FieldError error)
+		
+		// Id
+		auto inputId = requireAttribute(inputElem, "id");
+		inputElem.setAttribute("name", inputId);
+		
+		// Type of input
+		FormElementType inputType = FormElementType.TextArea;
+		if(!isTextAreaTag)
 		{
-			auto label = fieldLabel(formElem);
-			auto elem = Element.make("div", Html(`
-				<tr>
-					<td><label`~errorClass(error)~` id="`~formElem.name~`-label">`~label~`:</label></td>
-					<td><textarea`~errorClass(error)~` rows="3" cols="30" id="`~formElem.name~`" name="`~formElem.name~`">`~value~`</textarea></td>
-				</tr>
-			`));
-
-			auto input = elem.querySelector("textarea");
-			setAttributes(input, formElem.attributes);
-			return elem.innerHTML;
-		}
-
-		string password(FormSubmission submission, FormElement formElem, string value, FieldError error)
-		{
-			auto label = fieldLabel(formElem);
-			auto elem = Element.make("div", Html(`
-				<tr>
-					<td><label`~errorClass(error)~` id="`~formElem.name~`-label">`~label~`:</label></td>
-					<td><input`~errorClass(error)~` value="" type="password" id="`~formElem.name~`" name="`~formElem.name~`" /></td>
-				</tr>
-			`));
-
-			auto input = elem.querySelector("input");
-			setAttributes(input, formElem.attributes);
-			return elem.innerHTML;
-		}
-
-		string button(FormSubmission submission, FormElement formElem, string value, FieldError error)
-		{
-			auto elem = Element.make("div", Html(`
-				<tr>
-					<td colspan="2"><input value="`~formElem.label~`" type="submit" id="`~formElem.name~`" name="`~formElem.name~`" /></td>
-				</tr>
-			`));
-
-			auto input = elem.querySelector("input");
-			setAttributes(input, formElem.attributes);
-			return elem.innerHTML;
-		}
-
-		string errorLabel(FormSubmission submission, FormElement formElem, string value, FieldError error)
-		{
-			if(value == "")
-				return "";
-			
-			auto elem = Element.make("div", Html(`
-				<tr>
-					<td colspan="2"
-						class="validate-error-msg" name="`~formElem.name~`" id="`~formElem.name~`"
-					>`~value~`</td>
-				</tr>
-			`));
-
-			auto input = elem.querySelector("td.validate-error-msg");
-			setAttributes(input, formElem.attributes);
-			return elem.innerHTML;
-		}
-
-		string label(FormSubmission submission, FormElement formElem, string value, FieldError error)
-		{
-			auto elem = Element.make("div", Html(`
-				<tr>
-					<td colspan="2" name="`~formElem.name~`" id="`~formElem.name~`">`~formElem.label~`</td>
-				</tr>
-			`));
-
-			auto input = elem.querySelector("td."~formElem.name);
-			setAttributes(input, formElem.attributes);
-			return elem.innerHTML;
-		}
-
-		string raw(FormSubmission submission, FormElement formElem, string value, FieldError error)
-		{
-			return formElem.label;
-		}
-
-		string makeErrorMessage(FormSubmission submission)
-		{
-			// Collect all errors found
-			FieldError errors = FieldError.None;
-			foreach(fieldName, err; submission.invalidFields)
-				errors |= err;
-			
-			// Add a "missing field(s)" message if needed
-			string[] errMsgs;
-			if(errors & FieldError.Missing)
+			auto typeName = requireAttribute(inputElem, "type");
+			switch(typeName)
 			{
-				if(submission.missingFields.length == 1)
-					errMsgs ~=
-						"The required field "~
-						validateErrorFieldNameSpan(submission.missingFields[0].label)~
-						" is missing.";
-				else
-				{
-					string invalidLabels;
-					foreach(invalidElem; submission.missingFields)
-					{
-						if(invalidLabels != "")
-							invalidLabels ~= ", ";
-						invalidLabels ~= validateErrorFieldNameSpan(invalidElem.label);
-					}
-					errMsgs ~= "These required fields are missing: "~invalidLabels;
-				}
+			case "text":     inputType = FormElementType.Text;     break;
+			case "password": inputType = FormElementType.Password; break;
+			case "submit":   inputType = FormElementType.Button;   break;
+			default:
+				throw new Exception("Unknown value on <input>'s type attribute: '"~typeName~"'");
 			}
+		}
+		
+		// Label
+		string labelText;
+		if(inputType == FormElementType.Button)
+			labelText = inputElem.getAttribute("label-text");
+		else
+			labelText = requireAttribute(inputElem, "label-text");
 
-			// Add "confirmation failed" messages if needed
-			if(errors & FieldError.ConfirmationFailed)
-			foreach(invalidElem; submission.confirmationFailedFields)
-				errMsgs ~=
-					"The "~
-					validateErrorFieldNameSpan(submission.form[invalidElem.confirmationOf].label)~
-					" and "~
-					validateErrorFieldNameSpan(invalidElem.label)~
-					" fields don't match.";
-			
-			// Combine all error messages
-			string comboErrMsg;
-			if(errMsgs.length == 1)
-				comboErrMsg = "<span>"~errMsgs[0]~"</span>";
-			else
-			{
-				comboErrMsg = "<span>Please fix the following:</span><ul>";
-				foreach(msg; errMsgs)
-					comboErrMsg ~= "<li>"~msg~"</li>";
-				comboErrMsg ~= "</ul>";
-			}
+		auto labelElem = form.getLabel(inputId);
+		if(!labelElem && inputType != FormElementType.Button)
+			throw new Exception("Missing <label> with 'for' attribute of '"~inputId~"' (in template '"~filename~"')");
 
-			return comboErrMsg;
+		if(labelElem)
+		foreach(ref labelTextElem; labelElem.getElementsByTagName("label-text"))
+			labelTextElem.outerHTML = labelText;
+
+		inputElem.removeAttribute("label-text");
+		
+		// Confirmation of...
+		string confirmationOf = null;
+		if(inputElem.hasAttribute("confirms"))
+		{
+			confirmationOf = inputElem.getAttribute("confirms");
+			inputElem.removeAttribute("confirms");
+		}
+		
+		// Is optional?
+		auto isOptional = FormElementOptional.No;
+		if(inputElem.hasAttribute("optional"))
+		{
+			isOptional = FormElementOptional.Yes;
+			inputElem.removeAttribute("optional");
+		}
+		
+		// Default value
+		auto defaultValue = form.getValue(inputId);
+		if(inputType != FormElementType.Button)
+		{
+			//TODO: This will need to be different for radio/checkbox:
+			form.setValue(inputId, "{{"~inputId~"-value}}");
 		}
 
-		_defaultFormFormatter.text       = &text;
-		_defaultFormFormatter.textArea   = &textArea;
-		_defaultFormFormatter.password   = &password;
-		_defaultFormFormatter.button     = &button;
-		_defaultFormFormatter.errorLabel = &errorLabel;
-		_defaultFormFormatter.label      = &label;
-		_defaultFormFormatter.raw        = &raw;
-		_defaultFormFormatter.makeErrorMessage = &makeErrorMessage;
-
-		isDefaultFormFormatterInited = true;
+		// Validate error class
+		if(labelElem)
+		{
+			inputElem.addClass("{{"~inputId~"-extra-class}}");
+			labelElem.addClass("{{"~inputId~"-extra-class}}");
+		}
+		
+		// Create element
+		return FormElement(
+			inputType, inputId, labelText,
+			defaultValue, confirmationOf, isOptional
+		);
 	}
 
-	return _defaultFormFormatter;
+	bool isCompatible(FormElement other)
+	{
+		// Ignore 'label' and 'defaultValue'
+		return
+			this.type == other.type &&
+			this.name == other.name &&
+			this.confirmationOf == other.confirmationOf &&
+			this.isOptional == other.isOptional;
+	}
+}
+
+string makeErrorMessage(FormSubmission submission)
+{
+	static string validateErrorFieldNameSpan(string name)
+	{
+		return `<span class="validate-error-field-name">`~name~"</span>";
+	}
+
+	// Collect all errors found
+	FieldError errors = FieldError.None;
+	foreach(fieldName, err; submission.invalidFields)
+		errors |= err;
+	
+	// Add a "missing field(s)" message if needed
+	string[] errMsgs;
+	if(errors & FieldError.Missing)
+	{
+		if(submission.missingFields.length == 1)
+			errMsgs ~=
+				"The required field "~
+				validateErrorFieldNameSpan(submission.missingFields[0].label)~
+				" is missing.";
+		else
+		{
+			string invalidLabels;
+			foreach(invalidElem; submission.missingFields)
+			{
+				if(invalidLabels != "")
+					invalidLabels ~= ", ";
+				invalidLabels ~= validateErrorFieldNameSpan(invalidElem.label);
+			}
+			errMsgs ~= "These required fields are missing: "~invalidLabels;
+		}
+	}
+
+	// Add "confirmation failed" messages if needed
+	if(errors & FieldError.ConfirmationFailed)
+	foreach(invalidElem; submission.confirmationFailedFields)
+		errMsgs ~=
+			"The "~
+			validateErrorFieldNameSpan(submission.form[invalidElem.confirmationOf].label)~
+			" and "~
+			validateErrorFieldNameSpan(invalidElem.label)~
+			" fields don't match.";
+	
+	// Combine all error messages
+	string comboErrMsg;
+	if(errMsgs.length == 1)
+		comboErrMsg = "<span>"~errMsgs[0]~"</span>";
+	else
+	{
+		comboErrMsg = "<span>Please fix the following:</span><ul>";
+		foreach(msg; errMsgs)
+			comboErrMsg ~= "<li>"~msg~"</li>";
+		comboErrMsg ~= "</ul>";
+	}
+
+	return comboErrMsg;
 }
 
 enum FieldError
@@ -417,21 +362,17 @@ private @property FormSubmission blankFormSubmission()
 
 struct HtmlForm
 {
+	static enum formIdPrefix = "form-";
 	string name;
+	string origFilename;
 	
 	private FormElement[] elements;
 	private FormElement[string] elementLookup;
 
-	private string _selector;
-	@property string selector()
-	{
-		return _selector;
-	}
-
-	this(string name, string selector, FormElement[] elements)
+	this(string name, string origFilename, FormElement[] elements)
 	{
 		this.name = name;
-		this._selector = selector;
+		this.origFilename = origFilename;
 
 		validateElements(elements);
 		this.elements = elements;
@@ -473,6 +414,73 @@ struct HtmlForm
 		return form;
 	}
 	
+	/// Returns: Processed template html
+	static string registerFromTemplate(string filename, string rawHtml, bool overwriteExisting=false)
+	{
+		//TODO: Somehow fix this "Temporarily escape mustache partials" so it works with alternate delimeters
+
+		// Temporarily escape mustache partials start so DOM doesn't destroy it
+		rawHtml = rawHtml.replace("{{>", "{{MUSTACHE-GT");
+		// The <div> is needed so the DOM doesn't strip out leading/trailing mustache tags.
+		rawHtml = "<div>"~rawHtml~"</div>";
+		
+		auto doc = new Document(rawHtml, true, true);
+		foreach(form; doc.forms)
+		if(form.hasClass("managed-form"))
+			registerForm(form, filename, overwriteExisting);
+		
+		// Unescape mustache partials start so mustache can read it
+		auto bakedHtml = doc.toString().replace("{{MUSTACHE-GT", "{{>");
+		return bakedHtml;
+	}
+	
+	static void registerForm(Form form, string filename, bool overwriteExisting=false)
+	{
+		// Generate the new HtmlForm's elements from HTML DOM (and adjust the DOM as needed)
+		string formId;
+		FormElement[] formElems;
+		try
+		{
+			// Form ID
+			formId = requireAttribute(form, "id");
+			if(!formId.startsWith(formIdPrefix) || formId.length <= formIdPrefix.length)
+				throw new Exception("Form id '"~formId~"' doesn't start with required prefix '"~formIdPrefix~"'");
+			formId = formId[formIdPrefix.length..$];
+			form.setAttribute("name", formId);
+
+			// Form Elements
+			foreach(elem; form.getElementsByTagName("input"))
+				formElems ~= FormElement.fromDom(elem, form, filename);
+
+			foreach(elem; form.getElementsByTagName("textarea"))
+				formElems ~= FormElement.fromDom(elem, form, filename);
+
+			foreach(elem; form.getElementsByTagName("validate-error"))
+				formElems ~= FormElement.fromDom(elem, form, filename);
+		}
+		catch(MissingHtmlAttributeException e)
+		{
+			e.setTo(e.elem, e.attrName, filename);
+			throw e;
+		}
+		
+		// Register new HtmlForm, if necessary
+		auto newHtmlForm = HtmlForm(formId, filename, formElems);
+		if(isRegistered(formId))
+		{
+			auto oldHtmlForm = HtmlForm.get(formId);
+			if(overwriteExisting)
+			{
+				oldHtmlForm.unregister();
+				HtmlForm.register(newHtmlForm);
+			}
+			else if(!newHtmlForm.isCompatible(oldHtmlForm))
+				throw new Exception("Redefinition of form '"~formId~"' in '"~filename~"' is incompatible with existing definition in '"~oldHtmlForm.origFilename~"'");
+		}
+		else
+			HtmlForm.register(newHtmlForm);
+	}
+	
 	static bool isRegistered(string formName)
 	{
 		return !!(formName in registeredForms);
@@ -509,111 +517,99 @@ struct HtmlForm
 		return name in elementLookup;
 	}
 	
-	string toHtml(FormFormatter formatter = defaultFormFormatter)
+	bool isCompatible(HtmlForm other)
 	{
-		return toHtmlImpl(false, blankFormSubmission, formatter);
+		if(this.name != other.name)
+			return false;
+		
+		if(this.elements.length != other.elements.length)
+			return false;
+		
+		//TODO: Don't require elements to be in the same order
+		foreach(i; 0..this.elements.length)
+		if(!this.elements[i].isCompatible( other.elements[i] ))
+			return false;
+		
+		return true;
 	}
 	
-	string toHtml(FormSubmission submission, FormFormatter formatter = defaultFormFormatter)
+	void addFormDataContext(Mustache.Context c)
 	{
-		return toHtmlImpl(true, submission, formatter);
+		addFormDataContextImpl(c, false, blankFormSubmission);
 	}
 	
-	private string toHtmlImpl(bool useSubmission, FormSubmission submission, FormFormatter formatter)
+	void addFormDataContext(Mustache.Context c, FormSubmission submission)
 	{
-		string html;
+		addFormDataContextImpl(c, true, submission);
+	}
+	
+	private void addFormDataContextImpl(Mustache.Context c, bool useSubmission, FormSubmission submission)
+	{
 		foreach(elem; elements)
 		{
-			FormFormatterDg elemFormatter;
 			final switch(elem.type)
 			{
 			case FormElementType.Text:
-				elemFormatter = formatter.text is null?
-					defaultFormFormatter.text : formatter.text;
-				break;
-
 			case FormElementType.TextArea:
-				elemFormatter = formatter.textArea is null?
-					defaultFormFormatter.textArea : formatter.textArea;
-				break;
-
 			case FormElementType.Password:
-				elemFormatter = formatter.password is null?
-					defaultFormFormatter.password : formatter.password;
-				break;
-
-			case FormElementType.Button:
-				elemFormatter = formatter.button is null?
-					defaultFormFormatter.button : formatter.button;
-				break;
-
-			case FormElementType.ErrorLabel:
-				elemFormatter = formatter.errorLabel is null?
-					defaultFormFormatter.errorLabel : formatter.errorLabel;
-				break;
-
-			case FormElementType.Label:
-				elemFormatter = formatter.label is null?
-					defaultFormFormatter.label : formatter.label;
-				break;
-
-			case FormElementType.Raw:
-				elemFormatter = formatter.raw is null?
-					defaultFormFormatter.raw : formatter.raw;
-				break;
-			}
-
-			if(useSubmission && elem.type == FormElementType.ErrorLabel)
-			{
-				if(submission.errorMsg != "")
-					html ~= elemFormatter(submission, elem, submission.errorMsg, FieldError.None);
-			}
-			else
-			{
 				string value = "";
 				if(useSubmission && elem.name in submission.fields && submission.fields[elem.name] != "")
 					value = submission.fields[elem.name];
 
-				auto fieldError = submission.invalidFields.get(elem.name, FieldError.None);
-				html ~= elemFormatter(submission, elem, value, fieldError);
+				auto errorCode = submission.invalidFields.get(elem.name, FieldError.None);
+				auto hasError = errorCode != FieldError.None;
+
+				//TODO*: Put these 'elem.name~"-value"' strings into the FormElement itself,
+				//       so we don't re-allocate every time.
+				c[elem.name~"-value"] = value;
+				c[elem.name~"-extra-class"] = hasError? "validate-error" : "";
+				break;
+
+			case FormElementType.Button:
+				// Do nothing
+				break;
+
+			case FormElementType.ErrorLabel:
+				if(useSubmission && submission.errorMsg != "")
+				{
+					//TODO*: Put these '"form-"~submission.form.name~"-hasErrorMsg"'
+					//       strings into the Form itself, so we don't re-allocate every time.
+					c.useSection("form-"~submission.form.name~"-hasErrorMsg");
+					c["form-"~submission.form.name~"-errorMsg"] = submission.errorMsg; //elemFormatter(submission, elem, submission.errorMsg, FieldError.None);
+				}
+				break;
 			}
 		}
-		
-		return html;
 	}
-	
+
 	/// Returns: submission
 	FormSubmission process(
-		SessionData sess, string url, string[string] data,
-		FormFormatter formatter = defaultFormFormatter
+		SessionData sess, string url, string[string] data
 	)
 	{
-		return partialProcess(sess, url, data, elements, formatter);
+		return partialProcess(sess, url, data, elements);
 	}
 	
 	///ditto
 	FormSubmission partialProcess(
-		SessionData sess, string url, string[string] data, FormElement[] elementsToProcess,
-		FormFormatter formatter = defaultFormFormatter
+		SessionData sess, string url, string[string] data, FormElement[] elementsToProcess
 	)
 	{
 		auto submission = sess.submissions[this.name];
-		return partialProcess(submission, url, data, elementsToProcess, formatter);
+		return partialProcess(submission, url, data, elementsToProcess);
 	}
 
 	///ditto
 	FormSubmission process(
-		FormSubmission submission, string url, string[string] data,
-		FormFormatter formatter = defaultFormFormatter
+		FormSubmission submission, string url, string[string] data
 	)
 	{
-		return partialProcess(submission, url, data, elements, formatter);
+		return partialProcess(submission, url, data, elements);
 	}
 	
 	///ditto
 	FormSubmission partialProcess(
-		FormSubmission submission, string url, string[string] data, FormElement[] elementsToProcess,
-		FormFormatter formatter = defaultFormFormatter
+		FormSubmission submission, string url, string[string] data, FormElement[] elementsToProcess
 	)
 	{
 		submission.clear();
@@ -622,7 +618,6 @@ struct HtmlForm
 		
 		// Get responses and check for required fields that are missing
 		foreach(formElem; elementsToProcess)
-		if(formElem.type != FormElementType.Label && formElem.type != FormElementType.Raw)
 		{
 			bool valueExists = false;
 			if(formElem.name in data)
@@ -647,17 +642,12 @@ struct HtmlForm
 		
 		// Did anything fail?
 		if(!submission.isValid)
-		{
-			// Generate error message
-			auto errorMessageMaker = formatter.makeErrorMessage is null?
-				defaultFormFormatter.makeErrorMessage : formatter.makeErrorMessage;
-
-			submission.errorMsg = errorMessageMaker(submission);
-		}
+			submission.errorMsg = makeErrorMessage(submission);
 		
 		return submission;
 	}
 	
+	//TODO*: Exceptions in here need to include originating form/filename
 	private static void validateElements(FormElement[] elements)
 	{
 		bool buttonFound = false;
@@ -684,6 +674,12 @@ struct HtmlForm
 			if(elem.name.endsWith("-label"))
 				throw new Exception(`Form element name cannot end with "-label"`);
 			
+			if(elem.name.endsWith("-value"))
+				throw new Exception(`Form element name cannot end with "-value"`);
+			
+			if(elem.name.endsWith("-extra-class"))
+				throw new Exception(`Form element name cannot end with "-extra-class"`);
+			
 			if(elem.confirmationOf == elem.name)
 				throw new Exception("Form element cannot be confirmationOf itself: "~elem.name);
 
@@ -702,6 +698,5 @@ struct HtmlForm
 
 		if(!errorLabelFound)
 			throw new Exception("No ErrorLabel element on form");
-			
 	}
 }

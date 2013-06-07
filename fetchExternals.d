@@ -139,7 +139,7 @@ void fetchArsd(string path)
 	chdir("arsd");
 	gitClone(
 		"https://github.com/adamdruppe/misc-stuff-including-D-programming-language-web-stuff.git",
-		"cf071218321654e34704c563fed1c06080fda837"
+		"28d5c5a023ae0e00e0ccda36852e3bbe39a8c7b6"
 	);
 }
 

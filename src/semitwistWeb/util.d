@@ -91,6 +91,22 @@ void removeAll(Element elem, string selector)
 		elemToRemove.outerHTML = "";
 }
 
+void setAttributes(Element elem, string[string] attributes)
+{
+	if(attributes != null)
+	{
+		foreach(key, value; attributes)
+		{
+			if(key.toLower() == "class")
+				elem.addClass(value);
+			else if(key.toLower() == "style")
+				elem.style ~= value;
+			else
+				elem.setAttribute(key, value);
+		}
+	}
+}
+
 /++
 Sample usage:
 
@@ -153,6 +169,41 @@ void fill(T)(
 		collection.popFront();
 	}
 	elem.outerHTML = finalHtml;
+}
+
+class MissingHtmlAttributeException : Exception
+{
+	Element elem;
+	string attrName;
+	string htmlFileName;
+	
+	this(string file=__FILE__, size_t line=__LINE__)(Element elem, string attrName, string htmlFileName=null)
+	{
+		super("", file, line);
+		setTo(elem, attrName, htmlFileName);
+	}
+	
+	void setTo(Element elem, string attrName, string htmlFileName)
+	{
+		this.elem         = elem;
+		this.attrName     = attrName;
+		this.htmlFileName = htmlFileName;
+
+		auto msg = "Missing attribute '"~attrName~"' on <"~elem.tagName~"> element";
+		if(htmlFileName != "")
+			msg ~= " (in file '"~htmlFileName~"')";
+		
+		this.msg = msg;
+	}
+}
+
+string requireAttribute(Element elem, string name)
+{
+	auto value = elem.getAttribute(name);
+	if(value == "")
+		throw new MissingHtmlAttributeException(elem, name);
+
+	return value;
 }
 
 string insertDashes(string str)
