@@ -415,9 +415,9 @@ struct HtmlForm
 	{
 		this._name = name.strip();
 		this.origFilename = origFilename;
-
-		validateElements(elements);
 		this.elements = elements;
+
+		validateElements();
 		
 		FormElement[string] lookup;
 		foreach(elem; elements)
@@ -685,9 +685,13 @@ struct HtmlForm
 		return submission;
 	}
 	
-	//TODO*: Exceptions in here need to include originating form/filename
-	private static void validateElements(FormElement[] elements)
+	private void validateElements()
 	{
+		void error(string msg)
+		{
+			throw new Exception(origFilename~" [form: '"~name~"']: "~msg);
+		}
+		
 		bool buttonFound = false;
 		bool errorLabelFound = false;
 		foreach(elemIndex, elem; elements)
@@ -698,29 +702,29 @@ struct HtmlForm
 			if(elemIndex != elem2Index)
 			{
 				if(elem.name == elem2.name.strip())
-					throw new Exception("Duplicate form element name: "~elem.name);
+					error("Duplicate form element name: "~elem.name);
 				
 				if(elem.confirmationOf == elem2.name)
 					isConfirmationOfOk = true;
 			}
 			
 			if(elem.name == "")
-				throw new Exception("Form element name is empty");
+				error("Form element name is empty");
 			
 			if(elem.name.endsWith("-label"))
-				throw new Exception(`Form element name cannot end with "-label"`);
+				error(`Form element name cannot end with "-label"`);
 			
 			if(elem.name.endsWith("-value"))
-				throw new Exception(`Form element name cannot end with "-value"`);
+				error(`Form element name cannot end with "-value"`);
 			
 			if(elem.name.endsWith("-extra-class"))
-				throw new Exception(`Form element name cannot end with "-extra-class"`);
+				error(`Form element name cannot end with "-extra-class"`);
 			
 			if(elem.confirmationOf == elem.name)
-				throw new Exception("Form element cannot be confirmationOf itself: "~elem.name);
+				error("Form element cannot be confirmationOf itself: "~elem.name);
 
 			if(!isConfirmationOfOk)
-				throw new Exception("Form element '"~elem.name~"' is confirmationOf a non-existent element: "~elem.confirmationOf);
+				error("Form element '"~elem.name~"' is confirmationOf a non-existent element: "~elem.confirmationOf);
 
 			if(elem.type == FormElementType.Button)
 				buttonFound = true;
@@ -730,9 +734,9 @@ struct HtmlForm
 		}
 		
 		if(!buttonFound)
-			throw new Exception("No Button element on form");
+			error("No Button element on form");
 
 		if(!errorLabelFound)
-			throw new Exception("No ErrorLabel element on form");
+			error("No ErrorLabel element on form");
 	}
 }
