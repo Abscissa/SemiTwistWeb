@@ -47,10 +47,7 @@ void stLog
 	(LogLevel level, /*string mod = __MODULE__, string func = __FUNCTION__,*/ string file = __FILE__, int line = __LINE__, T...)
 	(auto ref T args)
 {
-	log!(level, /*__MODULE__, __FUNCTION__,*/ __FILE__, __LINE__)(
-		"%s",
-		text("[", Clock.currTime(), " ", toUpper(to!string(level)), "] ", args)
-	);
+	log!(level, /*__MODULE__, __FUNCTION__,*/ __FILE__, __LINE__)( "%s", text(args)	);
 }
 void stLogTrace     (/*string mod = __MODULE__, string func = __FUNCTION__,*/ string file = __FILE__, int line = __LINE__, T...)(auto ref T args) { stLog!(LogLevel.trace     /*, mod, func*/, file, line)(args); }
 void stLogDebugV    (/*string mod = __MODULE__, string func = __FUNCTION__,*/ string file = __FILE__, int line = __LINE__, T...)(auto ref T args) { stLog!(LogLevel.debugV    /*, mod, func*/, file, line)(args); }
