@@ -8,6 +8,7 @@ import core.memory;
 
 import vibe.vibe;
 import vibe.core.args;
+import vibe.core.connectionpool;
 import mysql.db;
 
 import semitwist.util.all;
@@ -33,7 +34,7 @@ alias int function(ref HttpServerSettings, ref UrlRouter) CustomPostInit;
 
 // This is a modification of vibe.d's built-in main().
 int semitwistWebMain(CustomSession, CustomHandler, UserDBOTypes...)
-	(string[] args, CustomPostInit customPostInit, Connection delegate() openDB)
+	(string[] args, CustomPostInit customPostInit, LockedConnection!Connection delegate() openDB)
 {
 	debug runDocHelperUnittest();
 

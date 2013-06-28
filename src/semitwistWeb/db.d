@@ -14,13 +14,14 @@ import std.typecons;
 import std.typetuple;
 
 import vibe.vibe;
+import vibe.core.connectionpool;
 
 import mysql.db;
 import semitwist.util.all;
 import semitwistWeb.util;
 
 bool dbHelperLogSql;
-Connection delegate() dbHelperOpenDB;
+LockedConnection!Connection delegate() dbHelperOpenDB;
 
 private void ensureOpenDBIsSet()
 {
@@ -400,7 +401,7 @@ mixin template defineDBO(string _dbName, string _dbTable)
 		return MyDBObject.dbColumns()[5];
 	*/
 	private static string[uint] _dbColumns;
-	static string[uint] dbColumns(Connection delegate() openDB) /// ditto
+	static string[uint] dbColumns(LockedConnection!Connection delegate() openDB) /// ditto
 	{
 		if(!_dbColumns)
 		{
@@ -420,7 +421,7 @@ mixin template defineDBO(string _dbName, string _dbTable)
 	}
 
 	private static string[] _dbKeys; /// ditto
-	static string[] dbKeys(Connection delegate() openDB) /// ditto
+	static string[] dbKeys(LockedConnection!Connection delegate() openDB) /// ditto
 	{
 		if(!_dbKeys)
 		{
@@ -446,7 +447,7 @@ mixin template defineDBO(string _dbName, string _dbTable)
 		_dbKeys = null;
 	}
 	
-	static void fillDBCache(Connection delegate() openDB)
+	static void fillDBCache(LockedConnection!Connection delegate() openDB)
 	{
 		if(!_dbColumns || !_dbKeys)
 		{
@@ -464,7 +465,7 @@ mixin template defineDBO(string _dbName, string _dbTable)
 		auto k = dbKeys(dbConn);
 	}
 	
-	static void rebuildDBCache(Connection delegate() openDB)
+	static void rebuildDBCache(LockedConnection!Connection delegate() openDB)
 	{
 		if(!_dbColumns || !_dbKeys)
 		{
