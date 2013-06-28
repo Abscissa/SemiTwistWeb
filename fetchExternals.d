@@ -81,6 +81,8 @@ void fetchAll()
 	sandboxFetch(&fetchSemiTwistDTools, "SemiTwist D Tools", externDir~"/SemiTwistDTools");
 	sandboxFetch(&fetchArsd,            "arsd",              externDir~"/arsd");
 	sandboxFetch(&fetchMySQLN,          "mysql-native",      externDir~"/mysqln");
+	sandboxFetch(&fetchLibEvent2,       "libevent2",         externDir~"/libevent2");
+	sandboxFetch(&fetchOpenSSL,         "openssl",           externDir~"/openssl");
 }
 
 /// Returns: Success?
@@ -119,7 +121,7 @@ void fetchVibeD(string path)
 	chdir(path);
 	gitClone(
 		"https://github.com/rejectedsoftware/vibe.d.git",
-		"v0.7.15"
+		"v0.7.16"
 	);
 }
 
@@ -148,7 +150,25 @@ void fetchMySQLN(string path)
 	chdir(path);
 	gitClone(
 		"https://github.com/rejectedsoftware/mysql-native.git",
-		"20bfb0f4e0b25a6039222aea217d5be3fd18741b"
+		"95d1909578991b5006a5bc9b53983b33398af326"
+	);
+}
+
+void fetchLibEvent2(string path)
+{
+	chdir(path);
+	gitClone(
+		"https://github.com/D-Programming-Deimos/libevent.git",
+		"master"
+	);
+}
+
+void fetchOpenSSL(string path)
+{
+	chdir(path);
+	gitClone(
+		"https://github.com/D-Programming-Deimos/openssl.git",
+		"master"
 	);
 }
 

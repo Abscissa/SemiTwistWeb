@@ -60,6 +60,8 @@ To set up a new project using SemiTwist Web Framework:
 	-I[correct_path]externals/SemiTwistDTools/src
 	-I[correct_path]externals/mustache-d/src
 	-I[correct_path]externals/arsd
+	-I[correct_path]externals/libevent2
+	-I[correct_path]externals/openssl
 	```
 	
 	I'd recommend also using ```-version=VibeIdleCollect```.
