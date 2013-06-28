@@ -150,7 +150,7 @@ void fetchMySQLN(string path)
 	chdir(path);
 	gitClone(
 		"https://github.com/rejectedsoftware/mysql-native.git",
-		"8d15919b78d00da795087aecc11e980601045c9e"
+		"ca6092f7f4bc13cb58c41c55f5f578dbc070ea4d"
 	);
 }
 

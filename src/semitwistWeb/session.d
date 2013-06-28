@@ -132,7 +132,6 @@ class SessionData
 		{
 			{
 				auto dbConn = dbHelperOpenDB();
-				scope(exit) dbConn.close();
 				logout(dbConn);
 			}
 

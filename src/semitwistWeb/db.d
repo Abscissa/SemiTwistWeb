@@ -114,7 +114,6 @@ void initializeDB()
 	}
 
 	auto dbConn = dbHelperOpenDB();
-	scope(exit) dbConn.close();
 	auto db = Command(dbConn);
 
 	auto sqlInitScript = import("init.sql");
@@ -406,7 +405,6 @@ mixin template defineDBO(string _dbName, string _dbTable)
 		if(!_dbColumns)
 		{
 			auto dbConn = openDB();
-			scope(exit) dbConn.close();
 			return dbColumns(dbConn);
 		}
 		
@@ -426,7 +424,6 @@ mixin template defineDBO(string _dbName, string _dbTable)
 		if(!_dbKeys)
 		{
 			auto dbConn = openDB();
-			scope(exit) dbConn.close();
 			return dbKeys(dbConn);
 		}
 
@@ -452,7 +449,6 @@ mixin template defineDBO(string _dbName, string _dbTable)
 		if(!_dbColumns || !_dbKeys)
 		{
 			auto dbConn = openDB();
-			scope(exit) dbConn.close();
 			fillDBCache(dbConn);
 		}
 		
@@ -470,7 +466,6 @@ mixin template defineDBO(string _dbName, string _dbTable)
 		if(!_dbColumns || !_dbKeys)
 		{
 			auto dbConn = openDB();
-			scope(exit) dbConn.close();
 			rebuildDBCache(dbConn);
 		}
 		

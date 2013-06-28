@@ -153,7 +153,6 @@ private int init(CustomSession, CustomHandler, UserDBOTypes...)
 		}
 
 		auto dbConn = dbHelperOpenDB();
-		scope(exit) dbConn.close();
 
 		stLogInfo("Preloading db cache...");
 		rebuildDBCache!UserDBOTypes(dbConn);
