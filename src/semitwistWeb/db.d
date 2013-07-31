@@ -595,9 +595,9 @@ struct Token
 		return ret;
 	}
 	
-	//TODO: Redo to use more chars so code is shorter. Also, skip the emailHash
-	//      because making the same chars totally random is mathematically better anyway.
-	//      In other words, this is temporarily crap and needs re-done.
+	//TODO*: Redo to use more chars so code is shorter. Also, skip the emailHash
+	//       because making the same chars totally random is mathematically better anyway.
+	//       In other words, this is temporarily crap and needs re-done.
 	private static string genCode(string email)
 	{
 		auto emailHash = sha1Of(email);

@@ -47,7 +47,8 @@ template handlerDispatch(CustomHandler)
 			else
 				url = text(Conf.host, req.path, "?", req.queryString);
 
-			CustomHandler(BaseHandler(req, res, null), null).redirect(url, HttpStatus.TemporaryRedirect);
+			auto page = CustomHandler(BaseHandler(req, res, null), null).redirect(url, HttpStatus.TemporaryRedirect);
+			page.send(req, res, null);
 			return;
 		}
 
