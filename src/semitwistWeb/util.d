@@ -386,6 +386,12 @@ mixin template importConf()
 		);
 }
 
+//TODO: This should go in SemiTwistDTools
+string nullableToString(T)(Nullable!T value, string ifNull = "N/A")
+{
+	return value.isNull? ifNull : to!string(value.get());
+}
+
 private enum _confErrorMsg =
 "Error in 'conf.d':
 res/conf.d: ";
