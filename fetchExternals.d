@@ -130,7 +130,7 @@ void fetchSemiTwistDTools(string path)
 	chdir(path);
 	gitClone(
 		"https://bitbucket.org/Abscissa/semitwistdtools.git",
-		"c7f89f7cd2c086591b544d5bffc536827ae6f763"
+		"5e66e593b23e2f27852bb550b31fee699763c360"
 	);
 }
 
