@@ -12,6 +12,7 @@ import arsd.dom;
 import vibe.inet.webform;
 
 import semitwist.util.all;
+import semitwist.arsddom;
 import semitwistWeb.session;
 import semitwistWeb.util;
 
