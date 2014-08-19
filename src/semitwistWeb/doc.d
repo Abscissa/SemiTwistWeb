@@ -61,23 +61,6 @@ void addCommonContext(Mustache.Context c, SessionData sess)
 	}
 }
 
-void addFormContext(Mustache.Context c, SessionData sess, string[] formNames)
-{
-	foreach(formName; formNames)
-		c.addFormContext(sess, formName);
-}
-
-void addFormContext(Mustache.Context c, SessionData sess, string formName)
-{
-	auto submissionPtr = formName in sess.submissions;
-	if(!submissionPtr)
-		throw new Exception(
-			text("Form '", formName, "' can't be found in SessionData.submissions.")
-		);
-	
-	HtmlForm.get(formName).addFormDataContext(c, *submissionPtr);
-}
-
 struct HtmlTemplateAccess
 {
 	/// lookup[templateName] == html source after the form system's adjustments

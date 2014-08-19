@@ -17,6 +17,23 @@ import semitwist.arsddom;
 import mustacheLib = mustache;
 alias mustacheLib.MustacheEngine!string Mustache;
 
+void addFormContext(Mustache.Context c, FormSubmission[string] sessSubmissions, string[] formNames)
+{
+	foreach(formName; formNames)
+		c.addFormContext(sessSubmissions, formName);
+}
+
+void addFormContext(Mustache.Context c, FormSubmission[string] sessSubmissions, string formName)
+{
+	auto submissionPtr = formName in sessSubmissions;
+	if(!submissionPtr)
+		throw new Exception(
+			text("Form '", formName, "' can't be found in SessionData.submissions.")
+		);
+	
+	HtmlForm.get(formName).addFormDataContext(c, *submissionPtr);
+}
+
 enum FormElementType
 {
 	Text,

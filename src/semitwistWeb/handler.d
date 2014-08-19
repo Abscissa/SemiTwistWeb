@@ -21,7 +21,6 @@ import semitwist.util.all;
 
 import semitwistWeb.db;
 import semitwistWeb.doc;
-import semitwistWeb.form;
 import semitwistWeb.session;
 import semitwistWeb.util;
 mixin importConf;
