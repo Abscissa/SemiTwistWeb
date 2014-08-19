@@ -13,8 +13,9 @@ import vibe.inet.webform;
 
 import semitwist.util.all;
 import semitwist.arsddom;
-import semitwistWeb.session;
-import semitwistWeb.util;
+
+import mustacheLib = mustache;
+alias mustacheLib.MustacheEngine!string Mustache;
 
 enum FormElementType
 {
@@ -621,23 +622,6 @@ struct HtmlForm
 				break;
 			}
 		}
-	}
-
-	/// Returns: submission
-	FormSubmission process(
-		SessionData sess, string url, FormFields data
-	)
-	{
-		return partialProcess(sess, url, data, elements);
-	}
-	
-	///ditto
-	FormSubmission partialProcess(
-		SessionData sess, string url, FormFields data, FormElement[] elementsToProcess
-	)
-	{
-		auto submission = sess.submissions[this.name];
-		return partialProcess(submission, url, data, elementsToProcess);
 	}
 
 	///ditto
