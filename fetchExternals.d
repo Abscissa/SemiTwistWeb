@@ -121,7 +121,7 @@ void fetchVibeD(string path)
 	chdir(path);
 	gitClone(
 		"https://github.com/rejectedsoftware/vibe.d.git",
-		"v0.7.16"
+		"v0.7.20"
 	);
 }
 
@@ -130,7 +130,7 @@ void fetchSemiTwistDTools(string path)
 	chdir(path);
 	gitClone(
 		"https://bitbucket.org/Abscissa/semitwistdtools.git",
-		"5e66e593b23e2f27852bb550b31fee699763c360"
+		"2057983c5597075a843a56f3b875e0e07b7f24cc"
 	);
 }
 
@@ -150,7 +150,7 @@ void fetchMySQLN(string path)
 	chdir(path);
 	gitClone(
 		"https://github.com/rejectedsoftware/mysql-native.git",
-		"fd11ec488c4797bb0985b2d7382edea92b1b8f94"
+		"6bc8c2340f5758da2b5c6e23956e3252ba2eabe6"
 	);
 }
 
@@ -168,7 +168,7 @@ void fetchOpenSSL(string path)
 	chdir(path);
 	gitClone(
 		"https://github.com/D-Programming-Deimos/openssl.git",
-		"master"
+		"7876ed23957ba5cbbcd5480aad1b8343f68a0d67"
 	);
 }
 

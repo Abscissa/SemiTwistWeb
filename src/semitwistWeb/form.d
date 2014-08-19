@@ -9,6 +9,8 @@ import std.string;
 import std.path : buildPath;
 
 import arsd.dom;
+import vibe.inet.webform;
+
 import semitwist.util.all;
 import semitwistWeb.session;
 import semitwistWeb.util;
@@ -290,7 +292,7 @@ final class FormSubmission
 	}
 
 	string             url;
-	string[string]     fields;        // Indexed by form element name
+	FormFields         fields;        // Indexed by form element name
 	FieldError[string] invalidFields; // Indexed by form element name
 	FormElement[]      missingFields;
 	FormElement[]      confirmationFailedFields;
@@ -308,8 +310,8 @@ final class FormSubmission
 		isValid   = true;
 		_errorMsg = null;
 
+		fields        = FormFields();
 		url           = null;
-		fields        = null;
 		missingFields = null;
 		invalidFields = null;
 		confirmationFailedFields = null;
@@ -368,7 +370,7 @@ final class FormSubmission
 	if(!submission)
 		return true;
 	
-	return submission.fields is null && submission.isValid;
+	return submission.fields.length == 0 && submission.isValid;
 }
 
 // Just to help avoid excess reallocations.
@@ -622,7 +624,7 @@ struct HtmlForm
 
 	/// Returns: submission
 	FormSubmission process(
-		SessionData sess, string url, string[string] data
+		SessionData sess, string url, FormFields data
 	)
 	{
 		return partialProcess(sess, url, data, elements);
@@ -630,7 +632,7 @@ struct HtmlForm
 	
 	///ditto
 	FormSubmission partialProcess(
-		SessionData sess, string url, string[string] data, FormElement[] elementsToProcess
+		SessionData sess, string url, FormFields data, FormElement[] elementsToProcess
 	)
 	{
 		auto submission = sess.submissions[this.name];
@@ -639,7 +641,7 @@ struct HtmlForm
 
 	///ditto
 	FormSubmission process(
-		FormSubmission submission, string url, string[string] data
+		FormSubmission submission, string url, FormFields data
 	)
 	{
 		return partialProcess(submission, url, data, elements);
@@ -647,7 +649,7 @@ struct HtmlForm
 	
 	///ditto
 	FormSubmission partialProcess(
-		FormSubmission submission, string url, string[string] data, FormElement[] elementsToProcess
+		FormSubmission submission, string url, FormFields data, FormElement[] elementsToProcess
 	)
 	{
 		submission.clear();

@@ -13,6 +13,7 @@ import std.traits;
 import std.typecons;
 
 import vibe.vibe;
+import vibe.utils.dictionarylist;
 
 import arsd.dom;
 import mustacheLib = mustache;
@@ -225,7 +226,7 @@ string insertDashes(string str)
 	return ret;
 }
 
-bool isSSLReverseProxy(HttpServerRequest req)
+bool isSSLReverseProxy(HTTPServerRequest req)
 {
 	// Newer versions of IIS automatically set this
 	if(auto valPtr = "X-ARR-SSL" in req.headers)
@@ -247,7 +248,7 @@ bool isSSLReverseProxy(HttpServerRequest req)
 	return false;
 }
 
-@property string clientIPs(HttpServerRequest req)
+@property string clientIPs(HTTPServerRequest req)
 {
 	immutable headerName = "X-Forwarded-For";
 	if(headerName in req.headers)
@@ -292,7 +293,7 @@ string commentToHTML(string str)
 		.replace("\n", "<br />\n");
 }
 
-Nullable!T paramAs(T)(HttpServerRequest req, string name)
+Nullable!T paramAs(T)(HTTPServerRequest req, string name)
 {
 	T value;
 
@@ -367,6 +368,15 @@ string toEmailString(SysTime st)
 	);
 }
 
+//TVal getRequired(TVal, TCase)(DictionaryList!(TVal, TCase) dict, string key)
+string getRequired(FormFields dict, string key)
+{
+	try
+		return dict[key];
+	catch(Exception e)
+		throw new MissingKeyException(key);
+}
+
 // Usage:
 //   mixin importConf;  // Imports 'res/conf.d' into symbol 'Conf'
 //   writefln("Site '%s' uses DB at %s", Conf.siteTitle, Conf.dbHost);
@@ -379,11 +389,15 @@ mixin template importConf()
 		import Conf = conf;
 	}
 	else
-		static assert(false,
-			"Missing 'res/conf.d'...\n"~
+	{
+		pragma(msg,
+			"ERROR: Missing or invalid 'res/conf.d'...\n"~
 			"    Before you can compile, you must copy 'res/conf-sample.d' to 'res/conf.d'\n"~
 			"    and fill in the settings inside."
 		);
+
+		import Conf = conf;
+	}
 }
 
 //TODO: This should go in SemiTwistDTools

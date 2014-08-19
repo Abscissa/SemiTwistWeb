@@ -28,7 +28,7 @@ mixin importConf;
 
 template handlerDispatch(CustomHandler)
 {
-	void handlerDispatch(string funcName)(HttpServerRequest req, HttpServerResponse res)
+	void handlerDispatch(string funcName)(HTTPServerRequest req, HTTPServerResponse res)
 	{
 		PageBase.validateLoginPageName();
 
@@ -47,7 +47,7 @@ template handlerDispatch(CustomHandler)
 			else
 				url = text(Conf.host, req.path, "?", req.queryString);
 
-			auto page = CustomHandler(BaseHandler(req, res, null), null).redirect(url, HttpStatus.TemporaryRedirect);
+			auto page = CustomHandler(BaseHandler(req, res, null), null).redirect(url, HTTPStatus.TemporaryRedirect);
 			page.send(req, res, null);
 			return;
 		}
@@ -64,7 +64,7 @@ template handlerDispatch(CustomHandler)
 
 template handlerDispatchError(CustomHandler)
 {
-	void handlerDispatchError(string funcName)(HttpServerRequest req, HttpServerResponse res, HttpServerErrorInfo error)
+	void handlerDispatchError(string funcName)(HTTPServerRequest req, HTTPServerResponse res, HTTPServerErrorInfo error)
 	{
 		if(CustomHandler.noCache)
 			CustomHandler.clearDocsCache();
@@ -86,13 +86,13 @@ struct HttpResult
 	Algebraic!(string, const(ubyte)[]) content;
 	string locationHeader;
 	
-	void send(HttpServerRequest req, HttpServerResponse res, SessionData sess)
+	void send(HTTPServerRequest req, HTTPServerResponse res, SessionData sess)
 	{
 		sendImpl(req, res, sess, true);
 	}
 
 	private void sendImpl(
-		HttpServerRequest req, HttpServerResponse res,
+		HTTPServerRequest req, HTTPServerResponse res,
 		SessionData sess, bool normalErrorPageOnFailure
 	)
 	{
@@ -161,8 +161,8 @@ struct BaseHandler
 	static bool allowInsecure   = false;
 	static bool publicDebugInfo = false;
 	static void function(Mustache.Context, SessionData) addAppContextCallback;
-	HttpServerRequest req;
-	HttpServerResponse res;
+	HTTPServerRequest req;
+	HTTPServerResponse res;
 	SessionData baseSess;
 	Mustache.Context viewContext;  /// On the stack: DO NOT SAVE past lifetime of handlerDispatch.
 
@@ -171,7 +171,7 @@ struct BaseHandler
 		baseSess.clearOtherForms(req.path, toKeep);
 	}
 	
-	HttpResult errorHandler(HttpServerErrorInfo error)
+	HttpResult errorHandler(HTTPServerErrorInfo error)
 	{
 		try
 		{
@@ -189,7 +189,7 @@ struct BaseHandler
 				)
 			);
 			
-			return genericError(HttpStatus.InternalServerError);
+			return genericError(HTTPStatus.InternalServerError);
 		}
 		catch(Exception e)
 		{
@@ -204,7 +204,7 @@ struct BaseHandler
 		}
 	}
 
-	private void logHttpError(HttpServerErrorInfo error)
+	private void logHttpError(HTTPServerErrorInfo error)
 	{
 		stLogError(
 			format(
@@ -215,7 +215,7 @@ struct BaseHandler
 		);
 	}
 
-	private HttpResult errorHandler4xx(HttpServerErrorInfo error)
+	private HttpResult errorHandler4xx(HTTPServerErrorInfo error)
 	{
 		if(error.code == 400)
 			return badRequest();
@@ -226,7 +226,7 @@ struct BaseHandler
 		return genericError(error.code);
 	}
 	
-	private HttpResult errorHandler5xx(HttpServerErrorInfo error)
+	private HttpResult errorHandler5xx(HTTPServerErrorInfo error)
 	{
 		logHttpError(error);
 
@@ -265,13 +265,13 @@ struct BaseHandler
 	HttpResult notFound()
 	{
 		HttpResult r;
-		r.statusCode = HttpStatus.NotFound;
+		r.statusCode = HTTPStatus.NotFound;
 		r.mime = "text/html";
 		r.content = renderPage("err-not-found");
 		return r;
 	}
 
-	HttpResult redirect(string url, int status = HttpStatus.Found)
+	HttpResult redirect(string url, int status = HTTPStatus.Found)
 	{
 		HttpResult r;
 		r.statusCode = status;
@@ -313,7 +313,7 @@ struct BaseHandler
 	HttpResult badRequest()
 	{
 		HttpResult r;
-		r.statusCode = HttpStatus.BadRequest;
+		r.statusCode = HTTPStatus.BadRequest;
 		r.mime = "text/html";
 		r.content = renderPage("err-bad-request");
 		return r;
@@ -322,7 +322,7 @@ struct BaseHandler
 	HttpResult ok(T)(T content, string mimeType) if( is(T:string) || is(T:const(ubyte)[]) )
 	{
 		HttpResult r;
-		r.statusCode = HttpStatus.OK;
+		r.statusCode = HTTPStatus.OK;
 		r.mime = mimeType;
 		r.content = content;
 		return r;

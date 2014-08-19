@@ -30,7 +30,7 @@ string logFile     = "";
 
 //TODO: Find/create a tool to monitor the logfile and send emails for each new entry.
 
-alias int function(ref HttpServerSettings, ref UrlRouter) CustomPostInit;
+alias int function(ref HTTPServerSettings, ref URLRouter) CustomPostInit;
 
 // This is a modification of vibe.d's built-in main().
 int semitwistWebMain(CustomSession, CustomHandler, UserDBOTypes...)
@@ -95,9 +95,9 @@ private int processCustomCmdLine(ref string[] args)
 	if(bindAddresses.length == 0)
 		bindAddresses = ["0.0.0.0", "::"];
 	
-	setPlainLogging(false);
+	setLogFormat(FileLogger.Format.threadTime);
 	if(logFile != "")
-		setLogFile(logFile, LogLevel.Info);
+		setLogFile(logFile, LogLevel.info);
 	
 	return -1;
 }
@@ -171,7 +171,7 @@ private int init(CustomSession, CustomHandler, UserDBOTypes...)
 	
 	stLogInfo("Initing HTTP server settings...");
 	alias handlerDispatchError!CustomHandler customHandlerDispatchError;
-	auto httpServerSettings = new HttpServerSettings();
+	auto httpServerSettings = new HTTPServerSettings();
 	httpServerSettings.port = port;
 	httpServerSettings.bindAddresses = bindAddresses;
 	httpServerSettings.sessionStore = sessionStore;
@@ -193,13 +193,13 @@ private int init(CustomSession, CustomHandler, UserDBOTypes...)
 	GC.minimize();
 
 	stLogInfo("Done initing SemiTwist Web Framework");
-	listenHttp(httpServerSettings, router);
+	listenHTTP(httpServerSettings, router);
 	return -1;
 }
 
-private UrlRouter initRouter(CustomHandler)()
+private URLRouter initRouter(CustomHandler)()
 {
-	auto router = new UrlRouter();
+	auto router = new URLRouter();
 
 	foreach(pageName; PageBase.getNames())
 		router.addPage( PageBase.get(pageName) );
@@ -211,7 +211,7 @@ private UrlRouter initRouter(CustomHandler)()
 	{
 		auto localPath = getExecPath ~ Conf.staticsRealPath;
 
-		auto fss = new HttpFileServerSettings();
+		auto fss = new HTTPFileServerSettings();
 		fss.failIfNotFound   = true;
 		fss.serverPathPrefix = staticsUrl;
 

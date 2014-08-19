@@ -52,8 +52,8 @@ immutable dbName = "database-name";
 
 /// SMTP Settings
 import vibe.mail.smtp;
-immutable smtpAuthType       = SmtpAuthType.Plain;
-immutable smtpConnectionType = SmtpConnectionType.StartTLS;
+immutable smtpAuthType       = SMTPAuthType.plain;
+immutable smtpConnectionType = SMTPConnectionType.startTLS;
 immutable smtpHost      = "example.com";
 //immutable smtpLocalName = "";
 immutable smtpPort      = 25;

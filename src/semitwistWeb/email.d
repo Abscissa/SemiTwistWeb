@@ -8,12 +8,12 @@ import semitwistWeb.db;
 import semitwistWeb.util;
 mixin importConf;
 
-private SmtpClientSettings _smtpClientSettings;
-@property SmtpClientSettings smtpClientSettings()
+private SMTPClientSettings _smtpClientSettings;
+@property SMTPClientSettings smtpClientSettings()
 {
 	if(!_smtpClientSettings)
 	{
-		_smtpClientSettings = new SmtpClientSettings();
+		_smtpClientSettings = new SMTPClientSettings();
 		_smtpClientSettings.authType       = Conf.smtpAuthType;
 		_smtpClientSettings.connectionType = Conf.smtpConnectionType;
 		_smtpClientSettings.host           = Conf.smtpHost;

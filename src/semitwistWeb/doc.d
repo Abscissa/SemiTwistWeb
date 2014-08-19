@@ -132,7 +132,7 @@ string definePages(DefinePage[] pages)
 
 	foreach(ref page; pages)
 	{
-		auto method = page.method=="ANY"? "Nullable!HttpMethod()" : "Nullable!HttpMethod(HttpMethod."~page.method~")";
+		auto method = page.method=="ANY"? "Nullable!HTTPMethod()" : "Nullable!HTTPMethod(HTTPMethod."~page.method~")";
 		page._makePageStr = "makePage!("~method~", "~page.dispatcher~", `"~page.name~"`, `"~page.urlRoute~"`, "~page.targs~")()";
 	}
 
@@ -222,7 +222,7 @@ private string[] getUrlRouteSections(string urlRoute)
 	return sections;
 }
 
-alias void delegate(HttpServerRequest, HttpServerResponse) PageHandler;
+alias void delegate(HTTPServerRequest, HTTPServerResponse) PageHandler;
 
 abstract class PageBase
 {
@@ -244,7 +244,7 @@ abstract class PageBase
 	PageHandler handler;
 
 	/// Null implies "any method"
-	Nullable!HttpMethod method;
+	Nullable!HTTPMethod method;
 	
 	protected int _numParams;
 	final @property int numParams()
@@ -370,7 +370,7 @@ final class Page(TArgs...) : PageBase
 	private this(
 		string name,
 		string[numSections] urlSections, string urlRouteRelativeToBase,
-		Nullable!HttpMethod method, PageHandler handler
+		Nullable!HTTPMethod method, PageHandler handler
 	)
 	{
 		this._name = name;
@@ -423,7 +423,7 @@ private void callUrlSink(TPage, Sink, TArgs...)(TPage p, ref Sink sink, TArgs ar
 	p.urlSink!(Sink)(sink, args);
 }
 
-void addPage(UrlRouter router, PageBase page)
+void addPage(URLRouter router, PageBase page)
 {
 	void addPageImpl(string urlRoute)
 	{
@@ -441,7 +441,7 @@ void addPage(UrlRouter router, PageBase page)
 
 // For the unittests below
 string testDispatcherResult;
-private void testDispatcher(string pageName)(HttpServerRequest req, HttpServerResponse res)
+private void testDispatcher(string pageName)(HTTPServerRequest req, HTTPServerResponse res)
 {
 	testDispatcherResult = "Did "~pageName;
 }
@@ -452,7 +452,7 @@ void runDocHelperUnittest()
 	import std.stdio;
 	writeln("Unittest: docHelper.makePage"); stdout.flush();
 	
-	enum m = Nullable!HttpMethod();
+	enum m = Nullable!HTTPMethod();
 
 	auto p1 = makePage!(m, testDispatcher, "name", "client/*/observer/:oid/survey", int, int)();
 	assert(p1.url(10, 20)   == Conf.urlBase~"client/10/observer/20/survey");

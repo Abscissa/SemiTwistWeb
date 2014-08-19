@@ -6,6 +6,7 @@ import std.conv;
 import std.datetime;
 import std.typecons;
 import std.typetuple;
+import std.variant;
 
 import vibe.vibe;
 import mysql.db;
@@ -125,7 +126,7 @@ class SessionData
 	}
 	
 	/// Ends the session if it's timed out
-	final void checkTimeout(HttpServerRequest req, HttpServerResponse res)
+	final void checkTimeout(HTTPServerRequest req, HTTPServerResponse res)
 	{
 		auto now = cast(DateTime) Clock.currTime();
 		if(now - lastAccess > timeoutDuration)
@@ -137,7 +138,7 @@ class SessionData
 
 			sessions.remove(this.id);
 			if(req !is null)
-				req.session = null;
+				req.session = Session();
 			res.terminateSession();
 		}
 	}
@@ -194,7 +195,7 @@ class SessionData
 		sess.keepAlive();
 
 		// Attach to Vibe.d session list
-		sessionStore.set(dbSess.id, "__dummy__", "");
+		sessionStore.set(dbSess.id, "__dummy__", Variant(""));
 		auto vibeSess = sessionStore.open(dbSess.id);
 		sess.session = vibeSess;
 		sess.session["$sessionCookiePath"]   = cookiePath;
