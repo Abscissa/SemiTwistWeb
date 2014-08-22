@@ -14,7 +14,6 @@ import semitwist.util.all;
 
 import semitwistWeb.db;
 import semitwistWeb.doc;
-import semitwistWeb.form;
 import semitwistWeb.util;
 
 SessionStore sessionStore;
@@ -60,7 +59,6 @@ class SessionData
 	DateTime lastAccess;  //TODO? Should this be SysTime?
 	bool     isDummyLogin = false;
 	string   oneShotMessage;
-	FormSubmission[string] submissions;
 	string   postLoginUrl;  /// Empty string implies default
 	
 	/// The ID of the logged-in user, or null if logged out
@@ -84,9 +82,6 @@ class SessionData
 	this(string id)
 	{
 		this.id = id;
-
-		foreach(name; HtmlForm.getNames())
-			submissions[name] = new FormSubmission();
 	}
 
 	void login(Connection dbConn, string userId)
