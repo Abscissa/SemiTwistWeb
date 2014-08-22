@@ -498,6 +498,16 @@ struct HtmlForm
 		return registeredFormNames;
 	}
 	
+	static FormSubmission[string] newSessionData()
+	{
+		FormSubmission[string] submissions;
+
+		foreach(name; HtmlForm.getNames())
+			submissions[name] = new FormSubmission();
+		
+		return submissions;
+	}
+	
 	/// Returns: Same HtmlForm provided, for convenience.
 	static HtmlForm register(HtmlForm form)
 	{
