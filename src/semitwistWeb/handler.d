@@ -165,11 +165,6 @@ struct BaseHandler
 	SessionData baseSess;
 	Mustache.Context viewContext;  /// On the stack: DO NOT SAVE past lifetime of handlerDispatch.
 
-	void clearOtherForms(T)(T toKeep) if(is(T==string) || is(T==string[]))
-	{
-		baseSess.clearOtherForms(req.path, toKeep);
-	}
-	
 	HttpResult errorHandler(HTTPServerErrorInfo error)
 	{
 		try

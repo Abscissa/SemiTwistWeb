@@ -143,45 +143,6 @@ class SessionData
 		}
 	}
 	
-	/// formToKeep: For example, if this is "purchase", then
-	///             submissions["purchase"] will not be cleared,
-	///             but the rest will.
-	///             If formsToKeep is null or empty string, then all will be cleared.
-	final void clearOtherForms(string currUrl, string formToKeep)
-	{
-		// Validate formToKeep
-		if(formToKeep != "" && formToKeep !in submissions)
-			throw new Exception(text("Form name '", formToKeep, "' doesn't exist in submissions."));
-		
-		// Clear all except formToKeep
-		foreach(name, val; submissions)
-		if(name != formToKeep || submissions[name].url != currUrl)
-			submissions[name].clear();
-		
-		if(formToKeep != PageBase.loginPageName)
-			postLoginUrl = null;
-	}
-
-	/// formsToKeep: For example, if this is ["purchase", "foobar"],
-	///              then submissions["purchase"] and submissions["foobar"]
-	///              will not be cleared, but the rest will.
-	///              If formsToKeep is empty, then all will be cleared.
-	final void clearOtherForms(string currUrl, string[] formsToKeep)
-	{
-		// Validate formsToKeep
-		foreach(name; formsToKeep)
-		if(name !in submissions)
-			throw new Exception(text("Form name '", name, "' doesn't exist in submissions."));
-		
-		// Clear all except formsToKeep
-		foreach(name, val; submissions)
-		if(!formsToKeep.contains(name) || submissions[name].url != currUrl)
-			submissions[name].clear();
-
-		if(!formsToKeep.contains(PageBase.loginPageName))
-			postLoginUrl = null;
-	}
-
 	void restoreSession(Connection dbConn)
 	{
 		// Do nothing

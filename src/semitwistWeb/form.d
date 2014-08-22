@@ -34,6 +34,39 @@ void addFormContext(Mustache.Context c, FormSubmission[string] sessSubmissions, 
 	HtmlForm.get(formName).addFormDataContext(c, *submissionPtr);
 }
 
+/// formToKeep: For example, if formToKeep is "purchase", then
+///             submissions["purchase"] will not be cleared,
+///             but the rest will.
+///             If formsToKeep is null or empty string, then all will be cleared.
+void clearOtherForms(FormSubmission[string] submissions, string currUrl, string formToKeep)
+{
+	// Validate formToKeep
+	if(formToKeep != "" && formToKeep !in submissions)
+		throw new Exception(text("Form name '", formToKeep, "' doesn't exist in submissions."));
+	
+	// Clear all except formToKeep
+	foreach(name, val; submissions)
+	if(name != formToKeep || submissions[name].url != currUrl)
+		submissions[name].clear();
+}
+
+/// formsToKeep: For example, if formsToKeep is ["purchase", "foobar"],
+///              then submissions["purchase"] and submissions["foobar"]
+///              will not be cleared, but the rest will.
+///              If formsToKeep is empty, then all will be cleared.
+void clearOtherForms(FormSubmission[string] submissions, string currUrl, string[] formsToKeep)
+{
+	// Validate formsToKeep
+	foreach(name; formsToKeep)
+	if(name !in submissions)
+		throw new Exception(text("Form name '", name, "' doesn't exist in submissions."));
+	
+	// Clear all except formsToKeep
+	foreach(name, val; submissions)
+	if(!formsToKeep.contains(name) || submissions[name].url != currUrl)
+		submissions[name].clear();
+}
+
 enum FormElementType
 {
 	Text,
