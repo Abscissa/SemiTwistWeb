@@ -15,7 +15,6 @@ import vibe.vibe;
 import semitwist.util.all;
 
 import semitwistWeb.db;
-import semitwistWeb.form;
 import semitwistWeb.session;
 import semitwistWeb.util;
 import semitwistWeb.handler; //TODO: Only needed for BaseHandler.noCache, eliminate this import.
@@ -66,13 +65,48 @@ struct HtmlTemplateAccess
 	/// lookup[templateName] == html source after the form system's adjustments
 	private static string[string] lookup;
 	
+	/+
+	Optional callback to be run immediately after each template is loaded.
+	The name of template loaded, and it's filePath, are passed in as params.
+	The delegate may freely read 'HtmlTemplateAccess[templateName]',
+	and must return a new value for 'HtmlTemplateAccess[templateName]'.
+	
+	Example:
+	-------------
+	HtmlTemplateAccess.onLoad = delegate string(string templateName, string filePath) {
+		// Do nothing:
+		return HtmlTemplateAccess[templateName];
+	};
+	-------------
+	
+	Example:
+	-------------
+	HtmlTemplateAccess.onLoad = delegate string(string templateName, string filePath) {
+		// Replace the entire template:
+		return "Hello World, your HTML template has been replaced with this.";
+	};
+	-------------
+	+/
+	static string delegate(string templateName, string filePath) onLoad;
+	
+	/// Retreive an html template. Automatically loads, caches, and calls
+	/// HtmlTemplateAccess.onLoad (if exists) if the template hasn't already been loaded.
 	static string opIndex(string templateName)
 	{
+		static bool isInCallback = false; // Avoid infinite recursion
+		
+		if(!isInCallback)
 		if(templateName !in lookup || BaseHandler.noCache)
 		{
 			auto filePath = buildPath(mustache.path, templateName ~ "." ~ mustache.ext);
-			auto rawHtml = cast(string)read(filePath);
-			lookup[templateName] = HtmlForm.registerFromTemplate(filePath, rawHtml, BaseHandler.noCache);
+			lookup[templateName] = cast(string)read(filePath);
+			
+			if(onLoad)
+			{
+				isInCallback = true;
+				lookup[templateName] = onLoad(templateName, filePath);
+				isInCallback = false;
+			}
 		}
 		
 		return lookup[templateName];
