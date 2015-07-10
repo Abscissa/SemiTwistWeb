@@ -1,0 +1,27 @@
+{
+	"name":        "semitwistweb",
+	"description": "A usable-but-unpolished Vibe.d/mustache-based web framework.",
+	"homepage":    "http://github.com/Abscissa/SemiTwistWeb",
+	"authors":     ["Nick Sabalausky"],
+	"license":     "zlib/libpng",
+	"copyright":   "©2013 Nick Sabalausky",
+
+	"sourcePaths": ["src"],
+	"importPaths": ["src"],
+
+	"dflags-dmd": ["-wi"],
+
+	"configurations": [
+		{
+			"name": "sdlang",
+			"versions": ["SDLang_TestApp"],
+			"dflags-dmd": ["-ofbin/sdlang"]
+		},
+
+		{
+			"name": "unittest",
+			"versions": ["SDLang_Unittest", "SDLang_Trace"],
+			"dflags-dmd": ["-ofbin/sdlang-unittest", "-debug", "-gc", "-unittest"]
+		}
+	]
+}
