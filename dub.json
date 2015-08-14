@@ -4,24 +4,33 @@
 	"homepage":    "http://github.com/Abscissa/SemiTwistWeb",
 	"authors":     ["Nick Sabalausky"],
 	"license":     "zlib/libpng",
-	"copyright":   "©2013 Nick Sabalausky",
+	"copyright":   "©2013-2015 Nick Sabalausky",
 
+	"targetType": "sourceLibrary",
 	"sourcePaths": ["src"],
 	"importPaths": ["src"],
+	"stringImportPaths": ["res"],
+	"targetPath": "bin",
+	"copyFiles": ["res/*", "www-static/*"],
 
-	"dflags-dmd": ["-wi"],
+	"dependencies": {
+		"mustache-d": "==0.1.1",
+		"mysql-native": "==0.1.3",
+		"semitwistdtools": "==0.10.3",
+		"vibe-d": "~>0.7.23"
+	},
 
 	"configurations": [
 		{
 			"name": "sdlang",
-			"versions": ["SDLang_TestApp"],
-			"dflags-dmd": ["-ofbin/sdlang"]
+			"versions": ["SDLang_TestApp"]
 		},
 
 		{
 			"name": "unittest",
+			"targetName": "semitwistweb-unittest",
 			"versions": ["SDLang_Unittest", "SDLang_Trace"],
-			"dflags-dmd": ["-ofbin/sdlang-unittest", "-debug", "-gc", "-unittest"]
+			"dflags-dmd": ["-debug", "-g", "-unittest"]
 		}
 	]
 }

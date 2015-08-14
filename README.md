@@ -40,35 +40,19 @@ To set up a new project using SemiTwist Web Framework:
 
 1. Create a new directory for your project.
 
-2. From either your project's directory or SemiTwist Web Framework's directory, run the command ```fetchExternals```. (You can run ```fetchExternals --help``` to see options.) This will create a subdirectory named ```externals``` with the correct versions of the needed prerequisites cloned into it.
+2. In your new project's directory, create a basic [```dub.json```/```dub.sdl``` DUB project file](http://code.dlang.org/package-format) that lists ```semitwistweb``` as a dependency (as [demonstrated here](http://code.dlang.org/packages/semitwistweb)).
 
-3. Copy the enitire ```res``` and ```www-static``` directories from SemiTwist Web Framework to your new project directory.
+3. From your new project's directory, run ```dub upgrade``` to download all your project's dependencies, including SemiTwistWeb. This will also copy two directories from SemiTwistWeb to your project: ```res``` and ```www-static```.
 
-4. Make a copy of ```res/conf-sample.d``` named ```res/conf.d```. Open the new ```res/conf.d```, read the comments and enter your own configuartion settings.
+4. Make a copy of ```res/conf-sample.d``` named ```res/conf.d```. Open the new ```res/conf.d```, read the comments and enter your own configuration settings.
 
 5. Open ```res/dbTroubleshootMsg.txt``` and read it. Make sure you have a MySQL database set up appropriately as that file describes.
 
-6. Open ```res/init.sql```. Leave the ```session``` table alone, but add any additional SQL statments to initialize your own MySQL database.
+6. Open ```res/init.sql```. Leave the ```session``` table alone, but add any additional SQL statements to initialize your own MySQL database.
 
 7. Customize the main HTML page template ```res/templates/frame-main.html``` (using Mustache syntax), the CSS file ```www-static/style.css``` (not a templated file), and optionally the HTML error page templates (```res/templates/err-*.html```) to your liking.
 
-8. Set up your build system or build script to pass the following flags to DMD:
-    ```
-	-version=Have_vibe_d
-	-Jpath_to_your_res_directory
-	-I[correct_path]externals/vibed/source
-	-I[correct_path]externals/SemiTwistDTools/src
-	-I[correct_path]externals/mustache-d/src
-	-I[correct_path]externals/arsd
-	-I[correct_path]externals/libevent2
-	-I[correct_path]externals/openssl
-	```
-	
-	I'd recommend also using ```-version=VibeIdleCollect```.
-	
-	If you're not using ```dub``` or ```vibe``` to build your project, then don't forget to include the appropriate linker swithces to build a Vibe.d app, and (on Windows) copy Vibe.d's necessary DLLs to the same directory where your project's EXE file will reside.
-
-9. Import Vibe.d by using ```import vibe.vibe;```, NOT ```import vibe.d;```. Also import (at the very least) ```semitwistWeb.init```. Then create a ```main()``` function like this:
+8. Import Vibe.d by using ```import vibe.vibe;```, NOT ```import vibe.d;```. Also import (at the very least) ```semitwistWeb.init```. Then create a ```main()``` function like this:
 
 	```
 	module myProj.main;
@@ -103,13 +87,13 @@ To set up a new project using SemiTwist Web Framework:
 	}
 	```
 
-10. Add a root index page and other pages to your site using the completely undocumented API. Also, there aren't any example applications to learn from yet. Yea, I'm really helpful so far aren't I?
+9. Add a root index page and other pages to your site using the completely undocumented API. Also, there aren't any example applications to learn from yet. Yea, I'm really helpful so far aren't I?
 
-11. Build your project.
+10. Build your project.
 
-12. Run your project with the --init-db switch to create the needed DB tables (THIS WILL DESTROY ALL DATA!)
+11. Run your project with the --init-db switch to create the needed DB tables (THIS WILL DESTROY ALL DATA!)
 
-13. Run your project without the --init-db switch to actually start it.
+12. Run your project without the --init-db switch to actually start it.
 
 What is "SemiTwist"?
 --------------------
