@@ -21,7 +21,7 @@ import mysql.db;
 import semitwist.util.all;
 mixin importConf;
 
-enum semitwistWebVersion = "0.0.1";
+enum semitwistWebVersion = "0.0.2";
 
 alias mustacheLib.MustacheEngine!string Mustache;
 bool mustacheInited = false;
