@@ -1,3 +1,10 @@
 /obj/*
 *.pnps
 /externals/*
+.dub/
+bin/
+deleteme/
+
+dub.selections.json
+src/semitwistWeb/packageVersion.d
+src/semitwist/

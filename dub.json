@@ -8,19 +8,25 @@
 
 	"targetType": "sourceLibrary",
 	"sourcePaths": ["src"],
-	"importPaths": ["src"],
+	"sourceFiles": ["res/conf.d"],
+	"importPaths": ["src", "res"],
 	"stringImportPaths": ["res"],
 	"targetPath": "bin",
-	"copyFiles": ["res/*", "www-static/*"],
 
 	"dependencies": {
+		"gen-package-version": "~>1.0.3",
 		"mustache-d": "==0.1.1",
 		"mysql-native": "==0.1.3",
-		"semitwistdtools": "==0.10.3",
+		"semitwistdtools": "==0.10.5",
 		"vibe-d": "~>0.7.23"
 	},
 
-	"configurations": [
+	"preGenerateCommands-posix":   ["$SEMITWISTDTOOLS_PACKAGE_DIR/scripts/copy_arsddom   $PACKAGE_DIR $SEMITWISTDTOOLS_PACKAGE_DIR"],
+	"preGenerateCommands-windows": ["$SEMITWISTDTOOLS_PACKAGE_DIR\\scripts\\copy_arsddom $PACKAGE_DIR $SEMITWISTDTOOLS_PACKAGE_DIR"],
+	"preGenerateCommands":
+        ["dub run --nodeps gen-package-version -- semitwistWeb --root=$PACKAGE_DIR --src=src"],
+        
+    "configurations": [
 		{
 			"name": "sdlang",
 			"versions": ["SDLang_TestApp"]
@@ -30,7 +36,15 @@
 			"name": "unittest",
 			"targetName": "semitwistweb-unittest",
 			"versions": ["SDLang_Unittest", "SDLang_Trace"],
-			"dflags-dmd": ["-debug", "-g", "-unittest"]
+		},
+		
+		{
+			"name": "no-build",
+			"targetType": "library",
+			"targetPath": "deleteme",
+			"importPaths": ["dummy"],
+			"sourcePaths": ["dummy"],
+			"excludedSourceFiles": ["src/*"]
 		}
 	]
 }
