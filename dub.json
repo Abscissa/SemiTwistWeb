@@ -21,7 +21,7 @@
 		"vibe-d": "~>0.7.23"
 	},
 
-	"preGenerateCommands-posix":   ["$SEMITWISTDTOOLS_PACKAGE_DIR/scripts/copy_arsddom   $PACKAGE_DIR $SEMITWISTDTOOLS_PACKAGE_DIR"],
+	"preGenerateCommands-posix":   ["chmod +x $SEMITWISTDTOOLS_PACKAGE_DIR/scripts/copy_arsddom && $SEMITWISTDTOOLS_PACKAGE_DIR/scripts/copy_arsddom $PACKAGE_DIR $SEMITWISTDTOOLS_PACKAGE_DIR"],
 	"preGenerateCommands-windows": ["$SEMITWISTDTOOLS_PACKAGE_DIR\\scripts\\copy_arsddom $PACKAGE_DIR $SEMITWISTDTOOLS_PACKAGE_DIR"],
 	"preGenerateCommands":
         ["dub run --nodeps gen-package-version -- semitwistWeb --root=$PACKAGE_DIR --src=src"],
