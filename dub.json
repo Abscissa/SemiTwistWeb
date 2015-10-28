@@ -6,11 +6,7 @@
 	"license":     "zlib/libpng",
 	"copyright":   "©2013-2015 Nick Sabalausky",
 
-	"targetType": "sourceLibrary",
 	"sourcePaths": ["src"],
-	"sourceFiles": ["res/conf.d"],
-	"importPaths": ["src", "res"],
-	"stringImportPaths": ["res"],
 	"targetPath": "bin",
 
 	"dependencies": {
@@ -28,20 +24,26 @@
         
     "configurations": [
 		{
-			"name": "sdlang",
-			"versions": ["SDLang_TestApp"]
+			"name": "library",
+			"targetType": "sourceLibrary",
+			"excludedSourceFiles": ["res/*"]
 		},
 
 		{
 			"name": "unittest",
+			"sourceFiles": ["res/conf.d"],
+			"importPaths": ["src", "res"],
+			"stringImportPaths": ["res"],
+			"targetType": "executable",
 			"targetName": "semitwistweb-unittest",
-			"versions": ["SDLang_Unittest", "SDLang_Trace"],
+			"versions": ["SemiTwistWeb_Unittest"]
 		},
 		
 		{
 			"name": "no-build",
 			"targetType": "library",
 			"targetPath": "deleteme",
+			"stringImportPaths": ["res"],
 			"importPaths": ["dummy"],
 			"sourcePaths": ["dummy"],
 			"excludedSourceFiles": ["src/*"]
