@@ -12,7 +12,7 @@
 	"dependencies": {
 		"gen-package-version": "~>1.0.3",
 		"mustache-d": "==0.1.1",
-		"mysql-native": "~>0.1.5",
+		"mysql-native": "~>0.1.6",
 		"semitwistdtools": "==0.10.5",
 		"vibe-d": "~>0.7.29"
 	},
