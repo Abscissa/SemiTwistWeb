@@ -65,21 +65,21 @@ int semitwistWebMain(CustomSession, CustomHandler, UserDBOTypes...)
 /// Returns: -1 normally, or else errorlevel to exit with
 private int processCustomCmdLine(ref string[] args)
 {
-	getOption("init-db",           &initDB,              "Init the DB and exit (THIS WILL DESTROY ALL DATA!)");
-	getOption("clear-sessions",    &clearSessions,       "Upon startup, clear sessions in DB insetad of resuming them.");
-	getOption("port",              &port,                "Port to bind.");
+	readOption("init-db",           &initDB,              "Init the DB and exit (THIS WILL DESTROY ALL DATA!)");
+	readOption("clear-sessions",    &clearSessions,       "Upon startup, clear sessions in DB insetad of resuming them.");
+	readOption("port",              &port,                "Port to bind.");
 	string bindAddress;
-	while(getOption("ip", &bindAddress, "IP address to bind. (Can be specified multiple times)"))
+	while(readOption("ip", &bindAddress, "IP address to bind. (Can be specified multiple times)"))
 		bindAddresses ~= bindAddress;
-	getOption("no-cache",          &BaseHandler.noCache, "Disable internal page caching. (Useful during development)");
-	getOption("no-cache-static",   &noCacheStatic,       "Set HTTP headers on static files to disable caching. (Useful during development)");
-	getOption("no-static",         &noStatic,            "Disable serving of static files.");
-	getOption("log",               &logFile,             "Set logfile.");
+	readOption("no-cache",          &BaseHandler.noCache, "Disable internal page caching. (Useful during development)");
+	readOption("no-cache-static",   &noCacheStatic,       "Set HTTP headers on static files to disable caching. (Useful during development)");
+	readOption("no-static",         &noStatic,            "Disable serving of static files.");
+	readOption("log",               &logFile,             "Set logfile.");
 
-	getOption("insecure",          &BaseHandler.allowInsecure,   "Allow non-HTTPS requests.");
-	getOption("insecure-cookies",  &useInsecureCookies,          "Don't set SECURE attribute on session cookies.");
-	getOption("public-debug-info", &BaseHandler.publicDebugInfo, "Display uncaught exceptions and stack traces to user. (Useful during development)");
-	getOption("log-sql",           &dbHelperLogSql,              "Log all SQL statements executed. (Useful during development)");
+	readOption("insecure",          &BaseHandler.allowInsecure,   "Allow non-HTTPS requests.");
+	readOption("insecure-cookies",  &useInsecureCookies,          "Don't set SECURE attribute on session cookies.");
+	readOption("public-debug-info", &BaseHandler.publicDebugInfo, "Display uncaught exceptions and stack traces to user. (Useful during development)");
+	readOption("log-sql",           &dbHelperLogSql,              "Log all SQL statements executed. (Useful during development)");
 	
 	try
 	{
@@ -212,13 +212,13 @@ private URLRouter initRouter(CustomHandler)()
 		auto localPath = getExecPath ~ Conf.staticsRealPath;
 
 		auto fss = new HTTPFileServerSettings();
-		fss.failIfNotFound   = true;
+		//fss.failIfNotFound   = true; // Setting isn't in latest vibe.d
 		fss.serverPathPrefix = staticsUrl;
 
 		if(noCacheStatic)
 		{
 			fss.maxAge           = seconds(1);
-			fss.preWriteCallback = (req, res, ref physicalPath) {
+			fss.preWriteCallback = (scope req, scope res, ref physicalPath) {
 				res.headers.remove("Etag");
 				res.headers["Cache-Control"] = "no-store";
 			};

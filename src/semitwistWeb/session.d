@@ -154,8 +154,8 @@ class SessionData
 		sessionStore.set(dbSess.id, "__dummy__", Variant(""));
 		auto vibeSess = sessionStore.open(dbSess.id);
 		sess.session = vibeSess;
-		sess.session["$sessionCookiePath"]   = cookiePath;
-		sess.session["$sessionCookieSecure"] = to!string(!useInsecureCookies);
+		sess.session.set("$sessionCookiePath", cookiePath);
+		sess.session.set("$sessionCookieSecure", to!string(!useInsecureCookies));
 
 		// Add to ADAMS session list
 		sessions[dbSess.id] = sess;
