@@ -76,7 +76,7 @@ private int processCustomCmdLine(ref string[] args)
 	readOption("no-static",         &noStatic,            "Disable serving of static files.");
 	readOption("log",               &logFile,             "Set logfile.");
 
-	readOption("insecure",          &BaseHandler.allowInsecure,   "Allow non-HTTPS requests.");
+	readOption("insecure",          &BaseHandler.allowInsecure,   "Allow non-HTTPS requests. Implies --insecure-cookies");
 	readOption("insecure-cookies",  &useInsecureCookies,          "Don't set SECURE attribute on session cookies.");
 	readOption("public-debug-info", &BaseHandler.publicDebugInfo, "Display uncaught exceptions and stack traces to user. (Useful during development)");
 	readOption("log-sql",           &dbHelperLogSql,              "Log all SQL statements executed. (Useful during development)");
@@ -94,6 +94,9 @@ private int processCustomCmdLine(ref string[] args)
 	
 	if(bindAddresses.length == 0)
 		bindAddresses = ["0.0.0.0", "::"];
+
+	if(BaseHandler.allowInsecure)
+		useInsecureCookies = true;
 	
 	setLogFormat(FileLogger.Format.threadTime);
 	if(logFile != "")
