@@ -56,7 +56,8 @@ string mySqlString(T)(T value) if(isNumeric!T)
 	return to!string(value);
 }
 
-string mySqlString()(DateTime dateTime)
+// Template param needed to work around DMD Issue #16484
+string mySqlString(T)(T dateTime) if(is(T==DateTime))
 {
 	return mySqlString( mySqlDateTime(dateTime) );
 }
