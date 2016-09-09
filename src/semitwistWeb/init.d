@@ -18,7 +18,7 @@ import semitwistWeb.doc;
 import semitwistWeb.handler;
 import semitwistWeb.session;
 import semitwistWeb.util;
-mixin importConf;
+mixin(importConf);
 
 bool initDB        = false;
 bool clearSessions = false;

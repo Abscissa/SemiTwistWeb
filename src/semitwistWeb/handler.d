@@ -23,7 +23,7 @@ import semitwistWeb.db;
 import semitwistWeb.doc;
 import semitwistWeb.session;
 import semitwistWeb.util;
-mixin importConf;
+mixin(importConf);
 
 template handlerDispatch(CustomHandler)
 {

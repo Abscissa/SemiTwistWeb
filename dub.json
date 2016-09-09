@@ -10,7 +10,7 @@
 	"targetPath": "bin",
 
 	"dependencies": {
-		"gen-package-version": "~>1.0.3",
+		"gen-package-version": "~>1.0.5",
 		"mustache-d": "==0.1.1",
 		"mysql-native": "~>0.1.6",
 		"semitwistdtools": "==0.10.5",

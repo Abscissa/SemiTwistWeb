@@ -6,7 +6,7 @@ import vibe.vibe;
 import semitwist.util.all;
 import semitwistWeb.db;
 import semitwistWeb.util;
-mixin importConf;
+mixin(importConf);
 
 private SMTPClientSettings _smtpClientSettings;
 @property SMTPClientSettings smtpClientSettings()

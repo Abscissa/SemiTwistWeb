@@ -19,7 +19,7 @@ import arsd.dom;
 import mustacheLib = mustache;
 import mysql.db;
 import semitwist.util.all;
-mixin importConf;
+mixin(importConf);
 
 alias mustacheLib.MustacheEngine!string Mustache;
 bool mustacheInited = false;
@@ -233,8 +233,8 @@ string toEmailString(SysTime st)
 		dt.day, monthStrings[dt.month - 1], dt.year,
 		dt.hour, dt.minute, dt.second,
 		tzOffset < seconds(0)? "-" : "+",
-		tzAbsOffset.hours,
-		tzAbsOffset.minutes
+		tzAbsOffset.split!"hours",
+		tzAbsOffset.split!"minutes"
 	);
 }
 
@@ -248,12 +248,12 @@ string getRequired(FormFields dict, string key)
 }
 
 // Usage:
-//   mixin importConf;  // Imports 'res/conf.d' into symbol 'Conf'
+//   mixin(importConf);  // Imports 'res/conf.d' into symbol 'Conf'
 //   writefln("Site '%s' uses DB at %s", Conf.siteTitle, Conf.dbHost);
 //
 // If 'res/conf.d' doesn't exist, a compile-time error is generated.
-mixin template importConf()
-{
+enum importConf = 
+q{
 	static if( __traits(compiles, (){ import conf; }) )
 	{
 		import Conf = conf;
@@ -268,7 +268,7 @@ mixin template importConf()
 
 		import Conf = conf;
 	}
-}
+};
 
 //TODO: This should go in SemiTwistDTools
 string nullableToString(T)(Nullable!T value, string ifNull = "N/A")

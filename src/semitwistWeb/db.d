@@ -19,7 +19,7 @@ import vibe.core.connectionpool;
 import mysql.db;
 import semitwist.util.all;
 import semitwistWeb.util;
-mixin importConf;
+mixin(importConf);
 
 bool dbHelperLogSql;
 LockedConnection!Connection delegate() dbHelperOpenDB;
@@ -616,7 +616,8 @@ struct Token
 			rnd[7] ~ emailHash[17] ~
 			rnd[8..$];
 
-		auto codeRaw = semitwist.util.text.toHexString(combined);
+		import semitwist.util.text : semitwistToHexString = toHexString;
+		auto codeRaw = semitwistToHexString(combined);
 		auto code = insertDashes(codeRaw);
 		return code;
 	}

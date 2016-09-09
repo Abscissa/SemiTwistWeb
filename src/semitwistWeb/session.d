@@ -15,6 +15,7 @@ import semitwist.util.all;
 import semitwistWeb.db;
 import semitwistWeb.doc;
 import semitwistWeb.util;
+mixin(importConf);
 
 SessionStore sessionStore;
 SessionData[string] sessions; // Indexed by session id
@@ -146,7 +147,7 @@ class SessionData
 	static SessionData restore(TSession)(Connection dbConn, SessionDB dbSess)
 	{
 		// Restore basic info
-		auto sess = new TSession(dbSess.id);
+		SessionData sess = new TSession(dbSess.id);
 		sess._userId = dbSess.userId;
 		sess.keepAlive();
 

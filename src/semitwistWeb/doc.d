@@ -18,6 +18,7 @@ import semitwistWeb.db;
 import semitwistWeb.session;
 import semitwistWeb.util;
 import semitwistWeb.handler; //TODO: Only needed for BaseHandler.noCache, eliminate this import.
+mixin(importConf);
 
 enum staticsUrl = Conf.urlBase ~ Conf.staticsVirtualPath;
 
@@ -98,6 +99,9 @@ struct HtmlTemplateAccess
 		if(!isInCallback)
 		if(templateName !in lookup || BaseHandler.noCache)
 		{
+			import std.file : read;
+			import std.path : buildPath;
+			
 			auto filePath = buildPath(mustache.path, templateName ~ "." ~ mustache.ext);
 			lookup[templateName] = cast(string)read(filePath);
 			
