@@ -292,7 +292,7 @@ class DBODuplicateEntryException : DBOException
 			if(!toUIntException)
 			{
 				auto keyIndex = keyNum-1;
-				auto dbKeys = T.dbKeys(dbHelperOpenDB);
+				auto dbKeys = T.dbo.dbKeys(dbHelperOpenDB);
 				if(keyIndex < dbKeys.length)
 					field = dbKeys[keyIndex];
 				else
@@ -315,7 +315,7 @@ class DBODuplicateEntryException : DBOException
 			if(m && m.captures.length >= 2)
 			{
 				string keyName = m.captures[1];
-				auto dbKeys = T.dbKeys(dbHelperOpenDB);
+				auto dbKeys = T.dbo.dbKeys(dbHelperOpenDB);
 				foreach(k,v; dbKeys)
 				if(v == keyName)
 				{
@@ -354,26 +354,52 @@ alias TypeTuple!(
 void clearDBCache(UserDBOTypes...)()
 {
 	foreach(T; TypeTuple!(UserDBOTypes, DBOHelperTypes))
-		T.clearDBCache();
+		T.dbo.clearDBCache();
 }
 
 void fillDBCache(UserDBOTypes...)(Connection dbConn)
 {
 	foreach(T; TypeTuple!(UserDBOTypes, DBOHelperTypes))
-		T.fillDBCache(dbConn);
+		T.dbo.fillDBCache(dbConn);
 }
 
 void rebuildDBCache(UserDBOTypes...)(Connection dbConn)
 {
 	foreach(T; TypeTuple!(UserDBOTypes, DBOHelperTypes))
-		T.rebuildDBCache(dbConn);
+		T.dbo.rebuildDBCache(dbConn);
 }
 
 //TODO: Make dbName and dbTable runtime values, maybe as a defineDynamicDBO if necessary
-mixin template defineDBO(string _dbName, string _dbTable)
+mixin template defineDBO(alias dbTable)
 {
-	static enum dbName  = _dbName;
-	static enum dbTable = _dbTable;
+	private static DBO _dbo;
+	static @property DBO dbo()
+	{
+		if(_dbo is null)
+		{
+			//throw new Exception("dbo is null");
+			_dbo = new DBO(dbTable);
+		}
+		
+		return _dbo;
+	}
+}
+
+final class DBO
+{
+	this(string dbTable, string dbName=null)
+	{
+		if(dbName == "")
+			dbName = Conf.dbName;
+
+		this._dbName = dbName;
+		this._dbTable = dbTable;
+	}
+	
+	private string _dbName;
+	private string _dbTable;
+	@property string dbName() { return _dbName; }
+	@property string dbTable() { return _dbTable; }
 
 	/**
 	Metadata
@@ -393,16 +419,16 @@ mixin template defineDBO(string _dbName, string _dbTable)
 	these multiple times in the same loop/function/operation/etc. Ie:
 	
 	GOOD:
-	auto columns = MyDBObject.dbColumns();
+	auto columns = MyDBObject.dbo.dbColumns();
 	if(5 in columns)
 		return columns[5];
 	
 	BAD:
-	if(5 in MyDBObject.dbColumns())
-		return MyDBObject.dbColumns()[5];
+	if(5 in MyDBObject.dbo.dbColumns())
+		return MyDBObject.dbo.dbColumns()[5];
 	*/
-	private static string[uint] _dbColumns;
-	static string[uint] dbColumns(LockedConnection!Connection delegate() openDB) /// ditto
+	private string[uint] _dbColumns;
+	string[uint] dbColumns(LockedConnection!Connection delegate() openDB) /// ditto
 	{
 		if(!_dbColumns)
 		{
@@ -412,7 +438,7 @@ mixin template defineDBO(string _dbName, string _dbTable)
 		
 		return dbColumns(cast(Connection)null);
 	}
-	static string[uint] dbColumns(Connection dbConn) /// ditto
+	string[uint] dbColumns(Connection dbConn) /// ditto
 	{
 		if(!_dbColumns)
 			_dbColumns = getDBColumns(dbConn, dbName, dbTable);
@@ -420,8 +446,8 @@ mixin template defineDBO(string _dbName, string _dbTable)
 		return _dbColumns;
 	}
 
-	private static string[] _dbKeys; /// ditto
-	static string[] dbKeys(LockedConnection!Connection delegate() openDB) /// ditto
+	private string[] _dbKeys; /// ditto
+	string[] dbKeys(LockedConnection!Connection delegate() openDB) /// ditto
 	{
 		if(!_dbKeys)
 		{
@@ -431,7 +457,7 @@ mixin template defineDBO(string _dbName, string _dbTable)
 
 		return dbKeys(cast(Connection)null);
 	}
-	static string[] dbKeys(Connection dbConn) /// ditto
+	string[] dbKeys(Connection dbConn) /// ditto
 	{
 		if(!_dbKeys)
 			_dbKeys = getDBKeys(dbConn, dbName, dbTable);
@@ -440,13 +466,13 @@ mixin template defineDBO(string _dbName, string _dbTable)
 	}
 	
 	// Cache control
-	static void clearDBCache()
+	void clearDBCache()
 	{
 		_dbColumns = null;
 		_dbKeys = null;
 	}
 	
-	static void fillDBCache(LockedConnection!Connection delegate() openDB)
+	void fillDBCache(LockedConnection!Connection delegate() openDB)
 	{
 		if(!_dbColumns || !_dbKeys)
 		{
@@ -457,13 +483,13 @@ mixin template defineDBO(string _dbName, string _dbTable)
 		fillDBCache(cast(Connection)null);
 	}
 
-	static void fillDBCache(Connection dbConn)
+	void fillDBCache(Connection dbConn)
 	{
 		auto c = dbColumns(dbConn);
 		auto k = dbKeys(dbConn);
 	}
 	
-	static void rebuildDBCache(LockedConnection!Connection delegate() openDB)
+	void rebuildDBCache(LockedConnection!Connection delegate() openDB)
 	{
 		if(!_dbColumns || !_dbKeys)
 		{
@@ -474,7 +500,7 @@ mixin template defineDBO(string _dbName, string _dbTable)
 		rebuildDBCache(cast(Connection)null);
 	}
 
-	static void rebuildDBCache(Connection dbConn)
+	void rebuildDBCache(Connection dbConn)
 	{
 		clearDBCache();
 		fillDBCache(dbConn);
@@ -486,13 +512,13 @@ struct SessionDB
 	string id;
 	string userId;
 	
-	mixin defineDBO!(Conf.dbName, "session");
+	mixin defineDBO!("session");
 	
 	void dbInsert(Connection dbConn)
 	{
 		auto db = Command(dbConn);
 		db.sql = text(
-			"INSERT INTO `", dbTable, "` (",
+			"INSERT INTO `", dbo.dbTable, "` (",
 			"`id`, `userId`",
 			") VALUES (",
 			mySqlString(id), ", ", mySqlString(userId),
@@ -504,14 +530,14 @@ struct SessionDB
 	void dbDelete(Connection dbConn)
 	{
 		auto db = Command(dbConn);
-		db.sql = text("DELETE IGNORE FROM `", dbTable, "` WHERE `id` = ", mySqlString(id));
+		db.sql = text("DELETE IGNORE FROM `", dbo.dbTable, "` WHERE `id` = ", mySqlString(id));
 		db.dboRunSQL(this);
 	}
 	
 	static void dbDeleteAll(Connection dbConn)
 	{
 		auto db = Command(dbConn);
-		db.sql = text("DELETE FROM `", dbTable, "`");
+		db.sql = text("DELETE FROM `", dbo.dbTable, "`");
 		db.dboRunSQL(SessionDB());
 	}
 	
@@ -520,7 +546,7 @@ struct SessionDB
 		SessionDB[] sessions;
 		
 		auto db = Command(dbConn);
-		db.sql = text("SELECT `id`, `userId` FROM `", dbTable, "`");
+		db.sql = text("SELECT `id`, `userId` FROM `", dbo.dbTable, "`");
 		auto rows = db.dboRunSQLResult(SessionDB());
 		if(rows.length == 0)
 			return sessions;
@@ -545,13 +571,13 @@ struct Token
 	DateTime expiration;
 	ulong linkedId;
 	
-	mixin defineDBO!(Conf.dbName, "token");
+	mixin defineDBO!("token");
 	
 	void dbInsert(Connection dbConn)
 	{
 		auto db = Command(dbConn);
 		db.sql = text(
-			"INSERT INTO `", dbTable, "` (",
+			"INSERT INTO `", dbo.dbTable, "` (",
 			"`type`, `code`, `expiration`, `email`, `linkedId`",
 			") VALUES (",
 			mySqlString(type), ", ", mySqlString(code), ", ", mySqlString(expiration), ", ",
@@ -565,7 +591,7 @@ struct Token
 	{
 		auto db = Command(dbConn);
 		db.sql = text(
-			"DELETE FROM `", dbTable, "` WHERE `email`=", mySqlString(email),
+			"DELETE FROM `", dbo.dbTable, "` WHERE `email`=", mySqlString(email),
 			" AND `type`=", mySqlString(type), " AND `code`=", mySqlString(code)
 		);
 		db.dboRunSQL(this);
@@ -576,7 +602,7 @@ struct Token
 		Nullable!Token ret;
 		auto db = Command(dbConn);
 		db.sql = text(
-			"SELECT `expiration`, `linkedId` FROM `"~dbTable~"`"~
+			"SELECT `expiration`, `linkedId` FROM `"~dbo.dbTable~"`"~
 			" WHERE `email`="~mySqlString(email)~
 			" AND `type`="~mySqlString(type)~
 			" AND `code`="~mySqlString(code)~
