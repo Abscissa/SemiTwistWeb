@@ -1,0 +1,45 @@
+name        "semitwistweb"
+description "A usable-but-unpolished Vibe.d/mustache-based web framework."
+homepage    "http://github.com/Abscissa/SemiTwistWeb"
+authors     "Nick Sabalausky"
+license     "zlib/libpng"
+copyright   "©2013-2016 Nick Sabalausky"
+
+sourcePaths "src"
+importPaths "src/"
+targetPath  "bin"
+
+dependency "gen-package-version" version="~>1.0.5"
+dependency "mustache-d"          version="0.1.1"
+dependency "mysql-native"        version="~>0.1.6"
+dependency "semitwistdtools"     version="0.10.5"
+dependency "vibe-d"              version="~>0.7.29"
+dependency "sdlang-d"            version="~>0.10.1"
+
+preGenerateCommands "chmod +x $SEMITWISTDTOOLS_PACKAGE_DIR/scripts/copy_arsddom && $SEMITWISTDTOOLS_PACKAGE_DIR/scripts/copy_arsddom $PACKAGE_DIR $SEMITWISTDTOOLS_PACKAGE_DIR" \
+	platform="posix"
+preGenerateCommands "$SEMITWISTDTOOLS_PACKAGE_DIR\\scripts\\copy_arsddom $PACKAGE_DIR $SEMITWISTDTOOLS_PACKAGE_DIR" \
+	platform="windows"
+preGenerateCommands "dub run --nodeps gen-package-version -- semitwistWeb --root=$PACKAGE_DIR --src=src"
+
+configuration "library" {
+	targetType "sourceLibrary"
+	copyFiles  "semitwistweb.sample-conf.sdl"
+}
+
+configuration "unittest" {
+	importPaths       "src"
+	stringImportPaths "res"
+	targetType        "executable"
+	targetName        "semitwistweb-unittest"
+	versions          "SemiTwistWeb_Unittest"
+}
+
+configuration "no-build" {
+	targetType          "library"
+	targetPath          "deleteme"
+	stringImportPaths   "res"
+	importPaths         "dummy"
+	sourcePaths         "dummy"
+	excludedSourceFiles "src/*"
+}
