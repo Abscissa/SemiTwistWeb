@@ -4,9 +4,9 @@ module semitwistWeb.email;
 
 import vibe.vibe;
 import semitwist.util.all;
+import semitwistWeb.conf;
 import semitwistWeb.db;
 import semitwistWeb.util;
-mixin(importConf);
 
 private SMTPClientSettings _smtpClientSettings;
 @property SMTPClientSettings smtpClientSettings()

@@ -19,7 +19,7 @@ import arsd.dom;
 import mustacheLib = mustache;
 import mysql.db;
 import semitwist.util.all;
-mixin(importConf);
+import semitwistWeb.conf;
 
 alias mustacheLib.MustacheEngine!string Mustache;
 bool mustacheInited = false;
@@ -247,64 +247,20 @@ string getRequired(FormFields dict, string key)
 		throw new MissingKeyException(key);
 }
 
-// Usage:
-//   mixin(importConf);  // Imports 'res/conf.d' into symbol 'Conf'
-//   writefln("Site '%s' uses DB at %s", Conf.siteTitle, Conf.dbHost);
-//
-// If 'res/conf.d' doesn't exist, a compile-time error is generated.
-enum importConf = 
-q{
-	static if( __traits(compiles, (){ import conf; }) )
-	{
-		import Conf = conf;
-	}
-	else
-	{
-		pragma(msg,
-			"ERROR: Missing or invalid 'res/conf.d'...\n"~
-			"    Before you can compile, you must copy 'res/conf-sample.d' to 'res/conf.d'\n"~
-			"    and fill in the settings inside."
-		);
-
-		import Conf = conf;
-	}
-};
-
 //TODO: This should go in SemiTwistDTools
 string nullableToString(T)(Nullable!T value, string ifNull = "N/A")
 {
 	return value.isNull? ifNull : to!string(value.get());
 }
 
-private enum _confErrorMsg =
-"Error in 'conf.d':
-res/conf.d: ";
-version(Windows)
-	immutable confErrorMsg = ctfe_substitute(_confErrorMsg, "/", "\\");
-else
-	immutable confErrorMsg = _confErrorMsg;
-
-// Validate conf.d:
-static assert(
-	Conf.urlBase.length > 0  &&
-	Conf.urlBase[0  ] == '/' &&
-	Conf.urlBase[$-1] == '/',
-	confErrorMsg~"urlBase must start and end with a slash"
-);
-static assert(
-	Conf.host.strip().length > 0,
-	confErrorMsg~"host cannot not be blank"
-);
-static assert(
-	Conf.host.strip() == Conf.host,
-	confErrorMsg~"host cannot have leading or trailing whitespace"
-);
-static assert(
-	Conf.host[$-1] != '/',
-	confErrorMsg~"host cannot end with a slash"
-);
-static assert(
-	Conf.host.toLower().startsWith("http://") ||
-	Conf.host.toLower().startsWith("https://"),
-	confErrorMsg~"host must begin with either http:// or https://"
-);
+Enum toEnum(Enum)(string name) if(is(Enum == enum))
+{
+	import std.traits : fullyQualifiedName;
+	foreach(value; __traits(allMembers, Enum))
+	{
+		if(value == name)
+			return __traits(getMember, Enum, value);
+	}
+	
+	throw new Exception("enum '"~ fullyQualifiedName!Enum ~"' doesn't have member: "~name);
+}

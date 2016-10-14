@@ -14,13 +14,13 @@ import std.typetuple;
 import vibe.vibe;
 import semitwist.util.all;
 
+import semitwistWeb.conf;
 import semitwistWeb.db;
 import semitwistWeb.session;
 import semitwistWeb.util;
 import semitwistWeb.handler; //TODO: Only needed for BaseHandler.noCache, eliminate this import.
-mixin(importConf);
 
-enum staticsUrl = Conf.urlBase ~ Conf.staticsVirtualPath;
+//enum staticsUrl = Conf.urlBase ~ Conf.staticsVirtualPath;
 
 void clearDocHelperCache()
 {
@@ -38,8 +38,8 @@ void addCommonContext(Mustache.Context c, SessionData sess)
 
 	c["mainFrame"]          = &mainFrame;
 	c["urlBase"]            = Conf.urlBase;
-	c["staticsUrl"]         = staticsUrl;
-	c["stylesheetFilename"] = staticsUrl ~ "style.css";
+	c["staticsUrl"]         = Conf.staticsUrl;
+	c["stylesheetFilename"] = Conf.staticsUrl ~ "style.css";
 
 	// Session information
 	c.useSection(sess.isLoggedIn? "loggedIn" : "loggedOut");

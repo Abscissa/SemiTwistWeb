@@ -10,15 +10,16 @@ import vibe.vibe;
 import vibe.core.args;
 import vibe.core.connectionpool;
 import mysql.db;
+import sdlang.exception;
 
 import semitwist.util.all;
 
+import semitwistWeb.conf;
 import semitwistWeb.db;
 import semitwistWeb.doc;
 import semitwistWeb.handler;
 import semitwistWeb.session;
 import semitwistWeb.util;
-mixin(importConf);
 
 bool initDB        = false;
 bool clearSessions = false;
@@ -43,6 +44,14 @@ int semitwistWebMain(CustomSession, CustomHandler, UserDBOTypes...)
 
 	if(auto errlvl = processCustomCmdLine(args) != -1)
 		return errlvl;
+
+	try
+		loadConf();
+	catch(SDLangException e)
+	{
+		stderr.writeln(e.msg);
+		return 1;
+	}
 
 	if(initDB)
 	{
@@ -216,7 +225,7 @@ private URLRouter initRouter(CustomHandler)()
 
 		auto fss = new HTTPFileServerSettings();
 		//fss.failIfNotFound   = true; // Setting isn't in latest vibe.d
-		fss.serverPathPrefix = staticsUrl;
+		fss.serverPathPrefix = Conf.staticsUrl;
 
 		if(noCacheStatic)
 		{
@@ -229,7 +238,7 @@ private URLRouter initRouter(CustomHandler)()
 		else
 			fss.maxAge = hours(24);
 		
-		router.get(staticsUrl~"*", serveStaticFiles(localPath, fss));
+		router.get(Conf.staticsUrl~"*", serveStaticFiles(localPath, fss));
 	}
 
 	alias handlerDispatch!CustomHandler customHandlerDispatch;

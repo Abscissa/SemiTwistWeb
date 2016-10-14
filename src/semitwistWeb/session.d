@@ -12,10 +12,10 @@ import vibe.vibe;
 import mysql.db;
 import semitwist.util.all;
 
+import semitwistWeb.conf;
 import semitwistWeb.db;
 import semitwistWeb.doc;
 import semitwistWeb.util;
-mixin(importConf);
 
 SessionStore sessionStore;
 SessionData[string] sessions; // Indexed by session id

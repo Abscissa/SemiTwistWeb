@@ -19,11 +19,11 @@ import vibe.vibe;
 import mysql.db;
 import semitwist.util.all;
 
+import semitwistWeb.conf;
 import semitwistWeb.db;
 import semitwistWeb.doc;
 import semitwistWeb.session;
 import semitwistWeb.util;
-mixin(importConf);
 
 template handlerDispatch(CustomHandler)
 {

@@ -14,7 +14,8 @@
 		"mustache-d": "==0.1.1",
 		"mysql-native": "~>0.1.6",
 		"semitwistdtools": "==0.10.5",
-		"vibe-d": "~>0.7.29"
+		"vibe-d": "~>0.7.29",
+		"sdlang-d": "~>0.10.1"
 	},
 
 	"preGenerateCommands-posix":   ["chmod +x $SEMITWISTDTOOLS_PACKAGE_DIR/scripts/copy_arsddom && $SEMITWISTDTOOLS_PACKAGE_DIR/scripts/copy_arsddom $PACKAGE_DIR $SEMITWISTDTOOLS_PACKAGE_DIR"],
@@ -26,13 +27,12 @@
 		{
 			"name": "library",
 			"targetType": "sourceLibrary",
-			"excludedSourceFiles": ["res/*"]
+			"copyFiles": ["semitwistweb.sample-conf.sdl"]
 		},
 
 		{
 			"name": "unittest",
-			"sourceFiles": ["res/conf.d"],
-			"importPaths": ["src", "res"],
+			"importPaths": ["src"],
 			"stringImportPaths": ["res"],
 			"targetType": "executable",
 			"targetName": "semitwistweb-unittest",

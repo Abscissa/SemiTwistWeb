@@ -1,0 +1,61 @@
+// IMPORTANT!
+//
+// Make a copy of this file named 'semitwistweb.config.sdl'
+// with the values below filled in.
+//
+// If you change this file, you will need to restart the program.
+
+/*
+Examples for host and urlBase:
+- If this program is setup to be publically accessed via:
+     http://mydomain.com
+
+  Then the settings should be:
+     host:    http://mydomain.com
+     urlBase: /
+
+- If this program is setup to be publically accessed via:
+     https://mydomain.com:8181/my/cool/stuff
+
+  Then the settings should be:
+     host:    https://mydomain.com:8181
+     urlBase: /my/cool/stuff/
+
+Note:
+host: Must OMIT trailing slash.
+urlBase: Must INCLUDE leading AND trailing slash.
+*/
+host "https://localhost:8080"
+urlBase "/"
+
+/*
+'staticsRealPath':    Must be relative to the executable.
+'staticsVirtualPath': Must be relative to 'urlBase'.
+
+TODO: NOT YET: 'staticsRealPath':    Either absolute, or relative to the executable.
+TODO: NOT YET: 'staticsVirtualPath': Either absolute, or relative to 'urlBase'. Can also
+be a full http:// or https:// URL.
+
+Both must INCLUDE a trailing slash.
+*/
+staticsRealPath    "../www-static/"
+staticsVirtualPath "static/"
+
+// DB Connection Settings
+// Must have permissions for: SELECT, INSERT, UPDATE, DELETE
+// When initing the DB, you must also have permissions for: CREATE, DROP
+dbHost "hostname-or-ip"
+dbPort 3306
+dbUser "username"
+dbPass "password"
+dbName "database-name"
+
+// SMTP Settings
+//import vibe.mail.smtp;
+smtpAuthType       "plain"    //SMTPAuthType.plain;
+smtpConnectionType "startTLS" //SMTPConnectionType.startTLS;
+smtpHost      "example.com";
+//smtpLocalName "";
+smtpPort      25;
+smtpUser      "notifier@example.com";
+smtpPass      "password";

@@ -18,8 +18,8 @@ import vibe.core.connectionpool;
 
 import mysql.db;
 import semitwist.util.all;
+import semitwistWeb.conf;
 import semitwistWeb.util;
-mixin(importConf);
 
 bool dbHelperLogSql;
 LockedConnection!Connection delegate() dbHelperOpenDB;
