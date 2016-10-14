@@ -136,18 +136,18 @@ private int init(CustomSession, CustomHandler, UserDBOTypes...)
 		stLogWarn("Used --insecure: INSECURE mode is ON! HTTPS will NOT be forced!");
 
 	// Warn about HTTP
-	if(Conf.host.toLower().startsWith("http://"))
+	if(conf.host.toLower().startsWith("http://"))
 	{
 		if(BaseHandler.allowInsecure)
 			stLogWarn(
 				"Non-relative URLs are set to HTTP, not HTTPS! ",
-				"If you did not intend this, change Conf.host and recompile."
+				"If you did not intend this, change conf.host and recompile."
 			);
 		else
 		{
 			// Require --insecure for non-HTTPS
 			stLogError(
-				"Conf.host is HTTP instead of HTTPS. THIS IS NOT RECOMMENDED. ",
+				"conf.host is HTTP instead of HTTPS. THIS IS NOT RECOMMENDED. ",
 				"If you wish to allow this anyway, you must use the --insecure flag. ",
 				"Note that this will cause non-relative application URLs to be HTTP instead of HTTPS."
 			);
@@ -221,11 +221,11 @@ private URLRouter initRouter(CustomHandler)()
 	/// with --no-static
 	if(!noStatic)
 	{
-		auto localPath = getExecPath ~ Conf.staticsRealPath;
+		auto localPath = getExecPath ~ conf.staticsRealPath;
 
 		auto fss = new HTTPFileServerSettings();
 		//fss.failIfNotFound   = true; // Setting isn't in latest vibe.d
-		fss.serverPathPrefix = Conf.staticsUrl;
+		fss.serverPathPrefix = conf.staticsUrl;
 
 		if(noCacheStatic)
 		{
@@ -238,7 +238,7 @@ private URLRouter initRouter(CustomHandler)()
 		else
 			fss.maxAge = hours(24);
 		
-		router.get(Conf.staticsUrl~"*", serveStaticFiles(localPath, fss));
+		router.get(conf.staticsUrl~"*", serveStaticFiles(localPath, fss));
 	}
 
 	alias handlerDispatch!CustomHandler customHandlerDispatch;

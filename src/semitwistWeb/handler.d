@@ -37,14 +37,14 @@ template handlerDispatch(CustomHandler)
 		// Force HTTPS
 		if(!CustomHandler.allowInsecure && !req.isSSLReverseProxy())
 		{
-			if(!Conf.host.toLower().startsWith("https://"))
-				throw new Exception("Internal Error: Conf.host was expected to always be https whenever SSL is being forced!");
+			if(!conf.host.toLower().startsWith("https://"))
+				throw new Exception("Internal Error: conf.host was expected to always be https whenever SSL is being forced!");
 
 			string url;
 			if(req.queryString == "")
-				url = text(Conf.host, req.path);
+				url = text(conf.host, req.path);
 			else
-				url = text(Conf.host, req.path, "?", req.queryString);
+				url = text(conf.host, req.path, "?", req.queryString);
 
 			auto page = CustomHandler(BaseHandler(req, res, null), null).redirect(url, HTTPStatus.TemporaryRedirect);
 			page.send(req, res, null);

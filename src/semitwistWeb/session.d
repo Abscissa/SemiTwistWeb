@@ -24,7 +24,7 @@ string _cookiePath;
 @property string cookiePath()
 {
 	if(_cookiePath is null)
-		_cookiePath = Conf.urlBase=="/"? "/" : Conf.urlBase[0..$-1];
+		_cookiePath = conf.urlBase=="/"? "/" : conf.urlBase[0..$-1];
 	
 	return _cookiePath;
 }

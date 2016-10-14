@@ -99,11 +99,11 @@ Nullable!T getNullable(T)(Row row, size_t index) if(!isSomeString!T && !is(T==Da
 /// Ie, Completely clears the DB and creates the needed tables.
 void initializeDB()
 {
-	int port = Conf.dbPort; // WhyTF was this needed?
+	int port = conf.dbPort; // WhyTF was this needed?
 	stLogInfo(
 		format(
 			"Initializing MySQL DB at %s:%s '%s', user '%s'...",
-			Conf.dbHost, port, Conf.dbName, Conf.dbUser
+			conf.dbHost, port, conf.dbName, conf.dbUser
 		)
 	);
 
@@ -390,7 +390,7 @@ final class DBO
 	this(string dbTable, string dbName=null)
 	{
 		if(dbName == "")
-			dbName = Conf.dbName;
+			dbName = conf.dbName;
 
 		this._dbName = dbName;
 		this._dbTable = dbTable;

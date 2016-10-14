@@ -7,17 +7,21 @@ import sdlang;
 import vibe.mail.smtp : SMTPAuthType, SMTPConnectionType;
 import semitwistWeb.util;
 
-private ConfStruct conf_;
-static @property const(ConfStruct) Conf()
+private Conf conf_;
+static @property const(Conf) conf()
 {
 	return conf_;
+}
+static @property Tag confSdlRoot()
+{
+	return conf_.sdlRoot;
 }
 void loadConf(string configFile = null)
 {
 	conf_.load(configFile);
 }
 
-struct ConfStruct
+struct Conf
 {
 	string host;
 	string urlBase;
@@ -43,6 +47,8 @@ struct ConfStruct
 
 	string staticsUrl;
 
+	Tag sdlRoot;
+
 	void load(string configFile = null)
 	{
 		if(configFile == "")
@@ -53,6 +59,7 @@ struct ConfStruct
 		}
 
 		auto root = parseFile(configFile);
+		this.sdlRoot = root;
 		host               = root.expectTagValue!string("host");
 		urlBase            = root.expectTagValue!string("urlBase");
 		staticsRealPath    = root.expectTagValue!string("staticsRealPath");
@@ -74,29 +81,29 @@ struct ConfStruct
 		// Validate:
 		import std.string;
 		enforce!ValidationException(
-			Conf.urlBase.length > 0  &&
-			Conf.urlBase[0  ] == '/' &&
-			Conf.urlBase[$-1] == '/',
+			urlBase.length > 0  &&
+			urlBase[0  ] == '/' &&
+			urlBase[$-1] == '/',
 			"urlBase must start and end with a slash"
 		);
 		enforce!ValidationException(
-			Conf.host.strip().length > 0,
+			host.strip().length > 0,
 			"host cannot not be blank"
 		);
 		enforce!ValidationException(
-			Conf.host.strip() == Conf.host,
+			host.strip() == host,
 			"host cannot have leading or trailing whitespace"
 		);
 		enforce!ValidationException(
-			Conf.host[$-1] != '/',
+			host[$-1] != '/',
 			"host cannot end with a slash"
 		);
 		enforce!ValidationException(
-			Conf.host.toLower().startsWith("http://") ||
-			Conf.host.toLower().startsWith("https://"),
+			host.toLower().startsWith("http://") ||
+			host.toLower().startsWith("https://"),
 			"host must begin with either http:// or https://"
 		);
 
-		staticsUrl = Conf.urlBase ~ Conf.staticsVirtualPath;
+		staticsUrl = urlBase ~ staticsVirtualPath;
 	}
 }

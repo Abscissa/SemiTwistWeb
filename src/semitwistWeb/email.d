@@ -14,13 +14,13 @@ private SMTPClientSettings _smtpClientSettings;
 	if(!_smtpClientSettings)
 	{
 		_smtpClientSettings = new SMTPClientSettings();
-		_smtpClientSettings.authType       = Conf.smtpAuthType;
-		_smtpClientSettings.connectionType = Conf.smtpConnectionType;
-		_smtpClientSettings.host           = Conf.smtpHost;
-		//_smtpClientSettings.localname      = Conf.smtpLocalName;
-		_smtpClientSettings.port           = Conf.smtpPort;
-		_smtpClientSettings.username       = Conf.smtpUser;
-		_smtpClientSettings.password       = Conf.smtpPass;
+		_smtpClientSettings.authType       = conf.smtpAuthType;
+		_smtpClientSettings.connectionType = conf.smtpConnectionType;
+		_smtpClientSettings.host           = conf.smtpHost;
+		//_smtpClientSettings.localname      = conf.smtpLocalName;
+		_smtpClientSettings.port           = conf.smtpPort;
+		_smtpClientSettings.username       = conf.smtpUser;
+		_smtpClientSettings.password       = conf.smtpPass;
 	}
 	
 	return _smtpClientSettings;

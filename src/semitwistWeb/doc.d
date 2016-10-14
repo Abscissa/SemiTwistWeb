@@ -20,8 +20,6 @@ import semitwistWeb.session;
 import semitwistWeb.util;
 import semitwistWeb.handler; //TODO: Only needed for BaseHandler.noCache, eliminate this import.
 
-//enum staticsUrl = Conf.urlBase ~ Conf.staticsVirtualPath;
-
 void clearDocHelperCache()
 {
 	mustache.clearCache();
@@ -37,9 +35,9 @@ void addCommonContext(Mustache.Context c, SessionData sess)
 	}
 
 	c["mainFrame"]          = &mainFrame;
-	c["urlBase"]            = Conf.urlBase;
-	c["staticsUrl"]         = Conf.staticsUrl;
-	c["stylesheetFilename"] = Conf.staticsUrl ~ "style.css";
+	c["urlBase"]            = conf.urlBase;
+	c["staticsUrl"]         = conf.staticsUrl;
+	c["stylesheetFilename"] = conf.staticsUrl ~ "style.css";
 
 	// Session information
 	c.useSection(sess.isLoggedIn? "loggedIn" : "loggedOut");
@@ -282,7 +280,7 @@ abstract class PageBase
 	}
 	final @property string urlRouteAbsolute()
 	{
-		return Conf.urlBase ~ _urlRouteRelativeToBase;
+		return conf.urlBase ~ _urlRouteRelativeToBase;
 	}
 
 	private static PageBase[string] registeredPages;
@@ -406,7 +404,7 @@ final class Page(TArgs...) : PageBase
 		else
 			this.method = method;
 		
-		this.urlSections[0] = Conf.urlBase ~ this.urlSections[0];
+		this.urlSections[0] = conf.urlBase ~ this.urlSections[0];
 	}
 	
 	string url(TArgs args)
@@ -456,8 +454,8 @@ void addPage(URLRouter router, PageBase page)
 
 	addPageImpl(page.urlRouteAbsolute);
 
-	if(page.urlRouteAbsolute == Conf.urlBase && Conf.urlBase != "")
-		addPageImpl(Conf.urlBase[0..$-1]);  // Sans trailing slash
+	if(page.urlRouteAbsolute == conf.urlBase && conf.urlBase != "")
+		addPageImpl(conf.urlBase[0..$-1]);  // Sans trailing slash
 }
 
 // For the unittests below
@@ -476,8 +474,8 @@ void runDocHelperUnittest()
 	enum m = Nullable!HTTPMethod();
 
 	auto p1 = makePage!(m, testDispatcher, "name", "client/*/observer/:oid/survey", int, int)();
-	assert(p1.url(10, 20)   == Conf.urlBase~"client/10/observer/20/survey");
-	assert(p1.url(111, 222) == Conf.urlBase~"client/111/observer/222/survey");
+	assert(p1.url(10, 20)   == conf.urlBase~"client/10/observer/20/survey");
+	assert(p1.url(111, 222) == conf.urlBase~"client/111/observer/222/survey");
 	
 	static assert( __traits( compiles, p1.url(111, 222) ));
 	static assert(!__traits( compiles, p1.url(111, `222`) ));
@@ -489,9 +487,9 @@ void runDocHelperUnittest()
 	static assert(!__traits( compiles, makePage!(m, testDispatcher, "name", "client/*/observer/:oid/survey", int           )() ));
 	static assert(!__traits( compiles, makePage!(m, testDispatcher, "name", "client/*/observer/:oid/survey", int, int, int )() ));
 	
-	assert(makePage!(m, testDispatcher, "name", "client")           ().url()        == Conf.urlBase~"client");
-	assert(makePage!(m, testDispatcher, "name", "")                 ().url()        == Conf.urlBase~"");
-	assert(makePage!(m, testDispatcher, "name", "client/*", string) ().url("hello") == Conf.urlBase~"client/hello");
-	assert(makePage!(m, testDispatcher, "name", "client/:foo", int) ().url(5)       == Conf.urlBase~"client/5");
-	assert(makePage!(m, testDispatcher, "name", "*", int)           ().url(5)       == Conf.urlBase~"5");
+	assert(makePage!(m, testDispatcher, "name", "client")           ().url()        == conf.urlBase~"client");
+	assert(makePage!(m, testDispatcher, "name", "")                 ().url()        == conf.urlBase~"");
+	assert(makePage!(m, testDispatcher, "name", "client/*", string) ().url("hello") == conf.urlBase~"client/hello");
+	assert(makePage!(m, testDispatcher, "name", "client/:foo", int) ().url(5)       == conf.urlBase~"client/5");
+	assert(makePage!(m, testDispatcher, "name", "*", int)           ().url(5)       == conf.urlBase~"5");
 }
